@@ -26,6 +26,9 @@ const userSchema = new mongoose.Schema({
       front: String,
       back: String
     },
+    verificationOTP: { // Ensure this is part of the schema
+      type: String,
+    },
     license: {
       front: String,
       back: String

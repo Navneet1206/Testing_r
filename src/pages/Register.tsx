@@ -25,20 +25,21 @@ const Register = () => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
+  
     try {
       const response = await axios.post('http://localhost:5000/api/auth/register', formData);
       if (response.data.success) {
-        setStep(2);
-        alert('Successfully signup')
-        navigate('/verify-otp', { state: { email } });
+        alert(response.data.message);
+        localStorage.setItem('emailForOTP', formData.email); // Save email in local storage
+        navigate('/verify-otp'); // Redirect to verify OTP page
       }
-    } catch (err: any) {
+    } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
     } finally {
       setIsLoading(false);
     }
   };
+  
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();

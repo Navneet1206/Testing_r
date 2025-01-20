@@ -46,27 +46,27 @@ router.post('/register', async (req, res) => {
   try {
     const { email, password, name, phone, role } = req.body;
 
-    // Check if user exists
+    // Check if the user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'Email already registered' });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Generate OTP
-    const otp = generateOTP();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
 
-    // Create user
+    // Create the user
     const user = new User({
       email,
       password: hashedPassword,
       name,
       phone,
       role,
-      verificationOTP: otp
+      verificationOTP: otp, // Save OTP in the database
+      isVerified: false, // Default to false
     });
 
     await user.save();
@@ -75,41 +75,51 @@ router.post('/register', async (req, res) => {
     await transporter.sendMail({
       from: process.env.SMTP_FROM,
       to: email,
-      subject: 'Verify your email',
-      html: `Your verification code is: <b>${otp}</b>`
+      subject: 'Verify Your Email',
+      html: `<p>Your OTP is: <b>${otp}</b></p>`,
     });
 
-    res.status(201).json({ message: 'Registration successful. Please verify your email.' });
+    res.status(201).json({ success: true, message: 'Registration successful. Please verify your email.' });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 // Verify OTP
 router.post('/verify-otp', async (req, res) => {
   try {
     const { email, otp } = req.body;
 
+    // Find the user by email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    if (user.verificationOTP !== otp) {
+    // Log the OTP for debugging
+    console.log(`User OTP: ${user.documents.verificationOTP}, Entered OTP: ${otp}`);
+
+    // Check if OTP matches
+    if (user.documents.verificationOTP !== otp) {
       return res.status(400).json({ message: 'Invalid OTP' });
     }
 
+    // Update user as verified
     user.isVerified = true;
-    user.verificationOTP = undefined;
+    user.documents.verificationOTP = undefined; // Clear OTP after verification
     await user.save();
 
-    res.json({ message: 'Email verified successfully' });
+    res.json({ success: true, message: 'Email verified successfully.' });
   } catch (error) {
     console.error('OTP verification error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+
+
 
 // Login
 router.post('/login', async (req, res) => {
