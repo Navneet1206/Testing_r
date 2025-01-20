@@ -10,6 +10,7 @@ import RideHistory from './pages/RideHistory';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
 import { AuthProvider } from './contexts/AuthContext';
+import VerifyOTP from './pages/VerifyOTP';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="/ride-history" element={<RideHistory />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/verify-otp" element={<VerifyOTP />} />
           </Routes>
         </div>
       </Router>

@@ -30,6 +30,8 @@ const Register = () => {
       const response = await axios.post('http://localhost:5000/api/auth/register', formData);
       if (response.data.success) {
         setStep(2);
+        alert('Successfully signup')
+        navigate('/verify-otp', { state: { email } });
       }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed');
