@@ -1,71 +1,44 @@
-import { useState, useEffect } from 'react';
-import { LoadScript, GoogleMap, Marker } from '@react-google-maps/api';
-
-// Map container style
-const containerStyle = {
-    width: '100%',
-    height: '100%',
-};
-
-// Default center (can be overridden by user's current location)
-const defaultCenter = {
-    lat: -3.745, // Default latitude
-    lng: -38.523 // Default longitude
-};
+import React, { useState, useEffect } from 'react';
 
 const LiveTracking = () => {
-    const [currentPosition, setCurrentPosition] = useState(defaultCenter);
+    const [currentPosition, setCurrentPosition] = useState({ lat: -33.8688, lng: 151.2195 });
 
-    // Effect to get the user's current location and update the position
     useEffect(() => {
+        const script = document.createElement('script');
+        script.src = `https://maps.gomaps.pro/maps/api/js?key=${import.meta.env.VITE_GOMAPPRO_API_KEY}&libraries=geometry,places`;
+        script.async = true;
+        script.defer = true;
+        script.onload = () => {
+            // Initialize the map
+            const map = new window.google.maps.Map(document.getElementById('map'), {
+                center: currentPosition,
+                zoom: 15,
+            });
+
+            // Add a marker for the current position
+            new window.google.maps.Marker({
+                position: currentPosition,
+                map: map,
+                title: "You are here!",
+            });
+        };
+        document.body.appendChild(script);
+
+        // Get the current location
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const { latitude, longitude } = position.coords;
-                    setCurrentPosition({
-                        lat: latitude,
-                        lng: longitude
-                    });
-                },
-                (error) => {
-                    console.error('Error getting current position:', error);
-                }
-            );
-
-            // Watch for position changes (e.g., if the user moves)
-            const watchId = navigator.geolocation.watchPosition(
-                (position) => {
-                    const { latitude, longitude } = position.coords;
-                    setCurrentPosition({
-                        lat: latitude,
-                        lng: longitude
-                    });
-                },
-                (error) => {
-                    console.error('Error watching position:', error);
-                }
-            );
-
-            // Cleanup: Stop watching the position when the component unmounts
-            return () => navigator.geolocation.clearWatch(watchId);
-        } else {
-            console.error('Geolocation is not supported by this browser.');
+            navigator.geolocation.getCurrentPosition((position) => {
+                const { latitude, longitude } = position.coords;
+                setCurrentPosition({ lat: latitude, lng: longitude });
+            });
         }
-    }, []);
+
+        return () => {
+            document.body.removeChild(script);
+        };
+    }, [currentPosition]);
 
     return (
-        // Load the Google Maps API script
-        <LoadScript googleMapsApiKey={import.meta.env.VITE_GOMAP_API_KEY}>
-            {/* Render the Google Map */}
-            <GoogleMap
-                mapContainerStyle={containerStyle} // Set the map container size
-                center={currentPosition} // Set the center of the map to the user's current position
-                zoom={15} // Set the initial zoom level
-            >
-                {/* Render a marker at the user's current position */}
-                <Marker position={currentPosition} />
-            </GoogleMap>
-        </LoadScript>
+        <div id="map" style={{ width: '100%', height: '100%' }}></div>
     );
 };
 
