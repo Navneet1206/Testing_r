@@ -2,7 +2,7 @@ const axios = require('axios');
 
 module.exports.getAddressCoordinate = async (address) => {
     const apiKey = process.env.GOMAPPRO_API_KEY;
-    const url = `https://api.gomaps.pro/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+    const url = `https://maps.gomaps.pro/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
 
     try {
         const response = await axios.get(url);
@@ -10,7 +10,8 @@ module.exports.getAddressCoordinate = async (address) => {
             const location = response.data.results[0].geometry.location;
             return {
                 ltd: location.lat,
-                lng: location.lng
+                lng: location.lng,
+                formatted_address: response.data.results[0].formatted_address,
             };
         } else {
             throw new Error('Unable to fetch coordinates');
@@ -27,7 +28,7 @@ module.exports.getDistanceTime = async (origin, destination) => {
     }
 
     const apiKey = process.env.GOMAPPRO_API_KEY;
-    const url = `https://api.gomaps.pro/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
+    const url = `https://maps.gomaps.pro/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
 
     try {
         const response = await axios.get(url);
@@ -47,16 +48,16 @@ module.exports.getDistanceTime = async (origin, destination) => {
 
 module.exports.getAutoCompleteSuggestions = async (input) => {
     if (!input) {
-        throw new Error('query is required');
+        throw new Error('Input is required');
     }
 
     const apiKey = process.env.GOMAPPRO_API_KEY;
-    const url = `https://api.gomaps.pro/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${apiKey}`;
+    const url = `https://maps.gomaps.pro/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${apiKey}`;
 
     try {
         const response = await axios.get(url);
         if (response.data.status === 'OK') {
-            return response.data.predictions.map(prediction => prediction.description).filter(value => value);
+            return response.data.predictions.map(prediction => prediction.description);
         } else {
             throw new Error('Unable to fetch suggestions');
         }
