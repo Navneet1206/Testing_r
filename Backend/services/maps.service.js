@@ -37,7 +37,7 @@ module.exports.getDistanceTime = async (origin, destination) => {
             if (response.data.rows[0].elements[0].status === 'ZERO_RESULTS') {
                 throw new Error('No routes found');
             }
-            return response.data.rows[0].elements[0];
+            return response.data.rows[0];
         } else {
             throw new Error('Unable to fetch distance and time');
         }
@@ -87,5 +87,27 @@ module.exports.getCaptainsInTheRadius = async (lat, lng, radius) => {
     } catch (err) {
         console.error(err);
         throw new Error('Unable to fetch captains in the radius');
+    }
+};
+module.exports.getRoute = async (origin, destination) => {
+    if (!origin || !destination) {
+        throw new Error('Origin and destination are required');
+    }
+
+    const apiKey = process.env.GOMAPPRO_API_KEY;
+    const url = `https://maps.gomaps.pro/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&key=${apiKey}`;
+
+    try {
+        const response = await axios.get(url);
+
+        if (response.data.status === 'OK') {
+            const route = response.data.routes[0]; // Fetch the first route
+            return route; // Return the route object
+        } else {
+            throw new Error('Unable to fetch route');
+        }
+    } catch (err) {
+        console.error(err);
+        throw new Error('Error fetching route data');
     }
 };
