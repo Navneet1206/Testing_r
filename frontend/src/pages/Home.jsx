@@ -66,6 +66,7 @@ const Home = () => {
             setPickupSuggestions(response.data);
         } catch (error) {
             console.error('Error fetching suggestions:', error);
+            setPickupSuggestions([]); // Clear suggestions on error
         }
     };
 
@@ -81,6 +82,7 @@ const Home = () => {
             setDestinationSuggestions(response.data);
         } catch (error) {
             console.error('Error fetching suggestions:', error);
+            setDestinationSuggestions([]); // Clear suggestions on error
         }
     };
 
@@ -188,13 +190,18 @@ const Home = () => {
 
     return (
         <div className='h-screen relative overflow-hidden'>
-            <img className='w-16 absolute left-5 top-5' src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png" alt="" />
-            <div className='h-screen w-screen'>
-                <LiveTracking />
+            {/* Uber Logo */}
+            <img className='w-16 absolute left-5 top-5 z-50' src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png" alt="" />
+
+            {/* Live Tracking Map */}
+            <div className='h-screen w-screen absolute top-0 z-0'>
+                <LiveTracking pickup={pickup} destination={destination} />
             </div>
-            <div className='flex flex-col justify-end h-screen absolute top-0 w-full'>
-                <div className='h-[30%] p-6 bg-white relative'>
-                    <h5 ref={panelCloseRef} onClick={() => setPanelOpen(false)} className='absolute opacity-0 right-6 top-6 text-2xl'>
+
+            {/* Input Panel */}
+            <div className='flex flex-col justify-end h-screen absolute top-0 w-full z-10'>
+                <div className='h-[30%] p-6 bg-white relative rounded-t-2xl shadow-lg'>
+                    <h5 ref={panelCloseRef} onClick={() => setPanelOpen(false)} className='absolute opacity-0 right-6 top-6 text-2xl cursor-pointer'>
                         <i className="ri-arrow-down-wide-line"></i>
                     </h5>
                     <h4 className='text-2xl font-semibold'>Find a trip</h4>
@@ -248,7 +255,9 @@ const Home = () => {
                         Find Trip
                     </button>
                 </div>
-                <div ref={panelRef} className='bg-white h-0'>
+
+                {/* Location Search Panel */}
+                <div ref={panelRef} className='bg-white h-0 overflow-hidden'>
                     <LocationSearchPanel
                         suggestions={activeField === 'pickup' ? pickupSuggestions : destinationSuggestions}
                         setPanelOpen={setPanelOpen}
@@ -259,7 +268,9 @@ const Home = () => {
                     />
                 </div>
             </div>
-            <div ref={vehiclePanelRef} className='fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-10 pt-12'>
+
+            {/* Vehicle Panel */}
+            <div ref={vehiclePanelRef} className='fixed w-full z-20 bottom-0 translate-y-full bg-white px-3 py-10 pt-12 rounded-t-2xl shadow-lg'>
                 <VehiclePanel
                     selectVehicle={setVehicleType}
                     fare={fare}
@@ -267,7 +278,9 @@ const Home = () => {
                     setVehiclePanel={setVehiclePanel}
                 />
             </div>
-            <div ref={confirmRidePanelRef} className='fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12'>
+
+            {/* Confirm Ride Panel */}
+            <div ref={confirmRidePanelRef} className='fixed w-full z-20 bottom-0 translate-y-full bg-white px-3 py-6 pt-12 rounded-t-2xl shadow-lg'>
                 <ConfirmRide
                     createRide={createRide}
                     pickup={pickup}
@@ -278,7 +291,9 @@ const Home = () => {
                     setVehicleFound={setVehicleFound}
                 />
             </div>
-            <div ref={vehicleFoundRef} className='fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12'>
+
+            {/* Looking for Driver Panel */}
+            <div ref={vehicleFoundRef} className='fixed w-full z-20 bottom-0 translate-y-full bg-white px-3 py-6 pt-12 rounded-t-2xl shadow-lg'>
                 <LookingForDriver
                     createRide={createRide}
                     pickup={pickup}
@@ -288,7 +303,9 @@ const Home = () => {
                     setVehicleFound={setVehicleFound}
                 />
             </div>
-            <div ref={waitingForDriverRef} className='fixed w-full z-10 bottom-0 bg-white px-3 py-6 pt-12'>
+
+            {/* Waiting for Driver Panel */}
+            <div ref={waitingForDriverRef} className='fixed w-full z-20 bottom-0 bg-white px-3 py-6 pt-12 rounded-t-2xl shadow-lg'>
                 <WaitingForDriver
                     ride={ride}
                     setVehicleFound={setVehicleFound}

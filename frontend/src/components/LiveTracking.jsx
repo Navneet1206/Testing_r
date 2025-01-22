@@ -1,106 +1,104 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { MapContainer, TileLayer, Polyline, Marker } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
-const LiveTracking = () => {
-    const [currentPosition, setCurrentPosition] = useState({ lat: -33.8688, lng: 151.2195 });
-    const [map, setMap] = useState(null);
-    const [routePolyline, setRoutePolyline] = useState(null);
+// Custom marker icon
+const customIcon = new L.Icon({
+  iconUrl: 'https://www.uber-assets.com/image/upload/f_auto,q_auto:eco,c_fill,h_384,w_576/v1548646918/assets/e9/2eeb8f-3764-4e26-8b17-5905a75e7e85/original/2.png',
+  iconSize: [40, 40],
+  iconAnchor: [20, 40],
+  popupAnchor: [0, -40],
+});
 
-    const initializeMap = () => {
-        const mapElement = document.getElementById('map');
-        if (mapElement && !map) {
-            const newMap = new window.google.maps.Map(mapElement, {
-                center: currentPosition,
-                zoom: 12,
-                draggable: true,
-                scrollwheel: true,
-                mapTypeControl: true,
-                streetViewControl: true,
-            });
-            setMap(newMap);
+const LiveTracking = ({ pickup, destination }) => {
+  const [route, setRoute] = useState(null);
+  const [startCoords, setStartCoords] = useState(null);
+  const [endCoords, setEndCoords] = useState(null);
 
-            // Add marker for the current position
-            new window.google.maps.Marker({
-                position: currentPosition,
-                map: newMap,
-                title: "You are here!",
-            });
+  useEffect(() => {
+    const fetchRoute = async () => {
+      if (!pickup || !destination) return;
+
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-route`, {
+          params: {
+            origin: `${pickup.lat},${pickup.lng}`,
+            destination: `${destination.lat},${destination.lng}`,
+          },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+
+        const directions = response.data;
+        if (directions) {
+          const decodedRoute = decodePolyline(directions.routes[0].overview_polyline.points);
+          setRoute(decodedRoute);
+          setStartCoords(pickup);
+          setEndCoords(destination);
         }
+      } catch (error) {
+        console.error('Error fetching directions:', error);
+      }
     };
 
-    const loadMapScript = () => {
-        const script = document.createElement('script');
-        script.src = `https://maps.gomaps.pro/maps/api/js?key=${import.meta.env.VITE_GOMAPPRO_API_KEY}&libraries=places,geometry`;
-        script.async = true;
-        script.defer = true;
-        script.onload = initializeMap;
-        document.body.appendChild(script);
+    fetchRoute();
+  }, [pickup, destination]);
 
-        return () => {
-            document.body.removeChild(script);
-        };
-    };
+  // Function to decode the polyline into an array of coordinates
+  const decodePolyline = (encoded) => {
+    let points = [];
+    let index = 0;
+    let lat = 0,
+      lng = 0;
 
-    useEffect(() => {
-        if (window.google && window.google.maps) {
-            initializeMap();
-        } else {
-            loadMapScript();
-        }
-    }, []);
+    while (index < encoded.length) {
+      let b, shift = 0, result = 0;
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      const dlat = result & 1 ? ~(result >> 1) : result >> 1;
+      lat += dlat;
 
-    const drawRoute = async (origin, destination) => {
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-distance-time`, {
-                params: { origin, destination },
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-            });
-            console.log(response.data);
-            const route = response.data;
-            const routeCoordinates = route.legs[0].steps.flatMap(step => [
-                { lat: step.start_location.lat, lng: step.start_location.lng },
-                { lat: step.end_location.lat, lng: step.end_location.lng },
-            ]);
+      shift = 0;
+      result = 0;
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      const dlng = result & 1 ? ~(result >> 1) : result >> 1;
+      lng += dlng;
 
-            // Remove existing polyline if any
-            if (routePolyline) {
-                routePolyline.setMap(null);
-            }
+      points.push([lat / 1e5, lng / 1e5]);
+    }
 
-            // Draw new polyline
-            const newPolyline = new window.google.maps.Polyline({
-                path: routeCoordinates,
-                geodesic: true,
-                strokeColor: '#FF0000',
-                strokeOpacity: 1.0,
-                strokeWeight: 4,
-            });
+    return points;
+  };
 
-            newPolyline.setMap(map);
-            setRoutePolyline(newPolyline);
-        } catch (err) {
-            console.error('Error drawing route:', err);
-        }
-    };
-
-    // Automatically fetch and display a route
-    useEffect(() => {
-        if (map) {
-            drawRoute('HR6C+5HX, Jawahar Nagar, Satna, Lamtara, Madhya Pradesh 485001, India', 'Pateri, Satna, Madhya Pradesh, India'); // Replace with actual source and destination
-        }
-    }, [map]);
-
-    // Update the current position if geolocation is enabled
-    useEffect(() => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                const { latitude, longitude } = position.coords;
-                setCurrentPosition({ lat: latitude, lng: longitude });
-            });
-        }
-    }, []);
-
-    return <div id="map" style={{ width: '100%', height: '100%' }}></div>;
+  return (
+    <div style={{ height: '100%', width: '100%' }}>
+      {startCoords && endCoords && (
+        <MapContainer
+          center={[startCoords.lat, startCoords.lng]}
+          zoom={13}
+          style={{ height: '100%', width: '100%' }}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          {route && <Polyline positions={route} color="blue" />}
+          <Marker position={[startCoords.lat, startCoords.lng]} icon={customIcon} />
+          <Marker position={[endCoords.lat, endCoords.lng]} icon={customIcon} />
+        </MapContainer>
+      )}
+    </div>
+  );
 };
 
 export default LiveTracking;
