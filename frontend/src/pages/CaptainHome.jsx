@@ -24,29 +24,46 @@ const CaptainHome = () => {
 
     useEffect(() => {
         socket.emit('join', {
-            userId: captain._id,
-            userType: 'captain'
-        })
+          userId: captain._id,
+          userType: 'captain',
+        });
+      
+        console.log('Captain joined:', captain._id); // Log captain join
+      
         const updateLocation = () => {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-
-                    socket.emit('update-location-captain', {
-                        userId: captain._id,
-                        location: {
-                            ltd: position.coords.latitude,
-                            lng: position.coords.longitude
-                        }
-                    })
-                })
-            }
-        }
-
-        const locationInterval = setInterval(updateLocation, 10000)
-        updateLocation()
-
-        // return () => clearInterval(locationInterval)
-    }, [])
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+              const { latitude, longitude } = position.coords;
+              console.log('Updating captain location:', { latitude, longitude }); // Log location update
+      
+              socket.emit('update-location-captain', {
+                userId: captain._id,
+                location: {
+                  ltd: latitude,
+                  lng: longitude,
+                },
+              });
+            });
+          }
+        };
+      
+        const locationInterval = setInterval(updateLocation, 10000); // Update every 10 seconds
+        updateLocation(); // Initial update
+      
+        return () => clearInterval(locationInterval); // Cleanup on unmount
+      }, []);
+      
+      useEffect(() => {
+        socket.on('new-ride', (data) => {
+          console.log('New ride request received:', data); // Log ride request
+          setRide(data);
+          setRidePopupPanel(true);
+        });
+      
+        return () => {
+          socket.off('new-ride'); // Cleanup on unmount
+        };
+      }, []);
 
     socket.on('new-ride', (data) => {
 
@@ -131,4 +148,4 @@ const CaptainHome = () => {
     )
 }
 
-export default CaptainHome
+export default CaptainHome;

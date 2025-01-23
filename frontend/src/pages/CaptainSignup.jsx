@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { CaptainDataContext } from '../context/CapatainContext';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { CaptainDataContext } from '../context/CapatainContext';
 import 'remixicon/fonts/remixicon.css';
 
 const CaptainSignup = () => {
@@ -16,11 +15,33 @@ const CaptainSignup = () => {
   const [vehiclePlate, setVehiclePlate] = useState('');
   const [vehicleCapacity, setVehicleCapacity] = useState('');
   const [vehicleType, setVehicleType] = useState('');
+  const [location, setLocation] = useState({ type: 'Point', coordinates: [0, 0] });
 
   const { captain, setCaptain } = React.useContext(CaptainDataContext);
 
+  const getLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setLocation({
+            type: 'Point',
+            coordinates: [longitude, latitude],
+          });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+        }
+      );
+    } else {
+      console.error('Geolocation is not supported by this browser.');
+    }
+  };
+
   const submitHandler = async (e) => {
     e.preventDefault();
+    getLocation(); // Fetch location before submitting
+
     const captainData = {
       fullname: {
         firstname: firstName,
@@ -34,6 +55,7 @@ const CaptainSignup = () => {
         capacity: vehicleCapacity,
         vehicleType: vehicleType,
       },
+      location: location, // Include location in the request
     };
 
     const response = await axios.post(
