@@ -34,6 +34,8 @@ const Home = () => {
     const [fare, setFare] = useState({});
     const [vehicleType, setVehicleType] = useState(null);
     const [ride, setRide] = useState(null);
+    const [sourceCoords, setSourceCoords] = useState(null);
+    const [destinationCoords, setDestinationCoords] = useState(null);
 
     const navigate = useNavigate();
     const { socket } = useContext(SocketContext);
@@ -168,6 +170,24 @@ const Home = () => {
         });
 
         setFare(response.data);
+
+        // Fetch coordinates for source and destination
+        const sourceResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`, {
+            params: { address: pickup },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        });
+
+        const destinationResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`, {
+            params: { address: destination },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        });
+
+        setSourceCoords(sourceResponse.data);
+        setDestinationCoords(destinationResponse.data);
     };
 
     const createRide = async () => {
@@ -190,7 +210,7 @@ const Home = () => {
         <div className='h-screen relative overflow-hidden'>
             <img className='w-16 absolute left-5 top-5' src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png" alt="" />
             <div className='h-screen w-screen'>
-                <LiveTracking />
+                <LiveTracking sourceCoords={sourceCoords} destinationCoords={destinationCoords} />
             </div>
             <div className='flex flex-col justify-end h-screen absolute top-0 w-full'>
                 <div className='h-[30%] p-6 bg-white relative'>

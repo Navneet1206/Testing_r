@@ -1,37 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { CaptainDataContext } from '../context/CapatainContext';
-import 'remixicon/fonts/remixicon.css';
+import { ClipLoader } from 'react-spinners'; // For loading spinner
+import { toast, ToastContainer } from 'react-toastify'; // For popup messages
+import 'react-toastify/dist/ReactToastify.css'; // CSS for toast notifications
 
 const Captainlogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false); // Loading state
 
-  const { captain, setCaptain } = React.useContext(CaptainDataContext);
+  const { captain, setCaptain } = useContext(CaptainDataContext);
   const navigate = useNavigate();
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    setLoading(true); // Start loading
+
     const captainData = {
       email: email,
       password: password,
     };
 
-    const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/captains/login`,
-      captainData
-    );
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/captains/login`,
+        captainData
+      );
 
-    if (response.status === 200) {
-      const data = response.data;
-      setCaptain(data.captain);
-      localStorage.setItem('token', data.token);
-      navigate('/captain-home');
+      if (response.status === 200) {
+        const data = response.data;
+        setCaptain(data.captain);
+        localStorage.setItem('token', data.token);
+        toast.success('Login successful! Redirecting...'); // Success popup
+        setTimeout(() => {
+          navigate('/captain-home');
+        }, 2000); // Redirect after 2 seconds
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Login failed. Please try again.'); // Error popup
+    } finally {
+      setLoading(false); // Stop loading
+      setEmail('');
+      setPassword('');
     }
-
-    setEmail('');
-    setPassword('');
   };
 
   return (
@@ -40,7 +53,7 @@ const Captainlogin = () => {
         {/* Logo and Heading */}
         <div className="text-center mb-8">
           <img
-            className="w-20 mx-auto mb-4"
+            className="w-20 mx-auto mb-4 animate-bounce" // Added animation
             src="https://www.svgrepo.com/show/505031/uber-driver.svg"
             alt="Captain Logo"
           />
@@ -83,9 +96,14 @@ const Captainlogin = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition duration-300"
+            disabled={loading} // Disable button when loading
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition duration-300 flex items-center justify-center"
           >
-            Login
+            {loading ? (
+              <ClipLoader size={20} color="#ffffff" /> // Loading spinner
+            ) : (
+              'Login'
+            )}
           </button>
         </form>
 
@@ -110,6 +128,9 @@ const Captainlogin = () => {
           </Link>
         </div>
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer position="top-center" autoClose={3000} />
     </div>
   );
 };
