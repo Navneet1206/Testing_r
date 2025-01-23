@@ -5,6 +5,7 @@ import UserLogin from './pages/UserLogin';
 import UserSignup from './pages/UserSignup';
 import Captainlogin from './pages/Captainlogin';
 import CaptainSignup from './pages/CaptainSignup';
+import UserRideHistory from './pages/UserRideHistory';
 import Home from './pages/Home';
 import UserProtectWrapper from './pages/UserProtectWrapper';
 import UserLogout from './pages/UserLogout';
@@ -15,7 +16,6 @@ import Riding from './pages/Riding';
 import CaptainRiding from './pages/CaptainRiding';
 import 'remixicon/fonts/remixicon.css';
 import Navbar from './components/Navbar';
-
 const App = () => {
   return (
     <div>
@@ -88,6 +88,18 @@ const App = () => {
               <>
                 <Navbar />
                 <CaptainRiding />
+              </>
+            </CaptainProtectWrapper>
+          }
+        />
+
+        <Route
+          path="/user/history"
+          element={
+            <CaptainProtectWrapper>
+              <>
+                <Navbar />
+                <UserRideHistory />
               </>
             </CaptainProtectWrapper>
           }

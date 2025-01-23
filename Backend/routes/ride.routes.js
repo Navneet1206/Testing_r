@@ -40,5 +40,9 @@ router.post('/end-ride',
 )
 
 
+// Backend/routes/ride.routes.js
+router.get('/user/history', authMiddleware.authUser, rideController.getUserRideHistory);
+router.get('/captain/history', authMiddleware.authCaptain, rideController.getCaptainRideHistory);
+
 
 module.exports = router;

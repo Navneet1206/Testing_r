@@ -21,7 +21,7 @@ module.exports.createRide = async (req, res) => {
         vehicleType,
       });
   
-      res.status(201).json(ride);
+      res.status(201).json({ ...ride.toObject(), otp: ride.otp });
   
       const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
   
@@ -134,3 +134,23 @@ module.exports.endRide = async (req, res) => {
         return res.status(500).json({ message: err.message });
     } s
 }
+
+
+// Backend/controllers/ride.controller.js
+module.exports.getUserRideHistory = async (req, res) => {
+    try {
+        const rides = await rideModel.find({ user: req.user._id }).sort({ createdAt: -1 });
+        res.status(200).json(rides);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+module.exports.getCaptainRideHistory = async (req, res) => {
+    try {
+        const rides = await rideModel.find({ captain: req.captain._id }).sort({ createdAt: -1 });
+        res.status(200).json(rides);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};

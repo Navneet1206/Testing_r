@@ -21,6 +21,9 @@ const Navbar = () => {
         {user ? (
           // User is logged in
           <>
+          <Link to="/user/history" className="text-black hover:text-gray-600 font-medium">
+    Ride History
+          </Link>
             <Link
               to="/home"
               className="text-black hover:text-gray-600 font-medium"
