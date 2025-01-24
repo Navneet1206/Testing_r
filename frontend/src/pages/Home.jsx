@@ -36,6 +36,7 @@ const Home = () => {
     const [ride, setRide] = useState(null);
     const [sourceCoords, setSourceCoords] = useState(null);
     const [destinationCoords, setDestinationCoords] = useState(null);
+    const [showRideDetailsPopup, setShowRideDetailsPopup] = useState(false); // State to control popup visibility
 
     const navigate = useNavigate();
     const { socket } = useContext(SocketContext);
@@ -45,44 +46,68 @@ const Home = () => {
         socket.emit('join', { userType: 'user', userId: user._id });
     }, [user]);
 
-    socket.on('ride-confirmed', (ride) => {
-        setVehicleFound(false);
-        setWaitingForDriver(true);
-        setRide(ride);
-    });
+    useEffect(() => {
+        const handleRideConfirmed = (ride) => {
+            console.log('Ride confirmed:', ride); // Debugging log
+            setVehicleFound(false);
+            setWaitingForDriver(true);
+            setRide(ride);
+        };
 
-    socket.on('ride-started', (ride) => {
-        setWaitingForDriver(false);
-        navigate('/riding', { state: { ride } });
-    });
+        const handleRideStarted = (ride) => {
+            console.log('Ride started:', ride); // Debugging log
+            setWaitingForDriver(false);
+            navigate('/riding', { state: { ride } });
+        };
+
+        socket.on('ride-confirmed', handleRideConfirmed);
+        socket.on('ride-started', handleRideStarted);
+
+        return () => {
+            socket.off('ride-confirmed', handleRideConfirmed);
+            socket.off('ride-started', handleRideStarted);
+        };
+    }, [socket, navigate]);
 
     const handlePickupChange = async (e) => {
-        setPickup(e.target.value);
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
-                params: { input: e.target.value },
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
-            setPickupSuggestions(response.data);
-        } catch (error) {
-            console.error('Error fetching suggestions:', error);
+        const inputValue = e.target.value;
+        setPickup(inputValue);
+
+        if (inputValue.length >= 3) {
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
+                    params: { input: inputValue },
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+                setPickupSuggestions(response.data);
+            } catch (error) {
+                console.error('Error fetching suggestions:', error);
+            }
+        } else {
+            setPickupSuggestions([]);
         }
     };
 
     const handleDestinationChange = async (e) => {
-        setDestination(e.target.value);
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
-                params: { input: e.target.value },
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
-            setDestinationSuggestions(response.data);
-        } catch (error) {
-            console.error('Error fetching suggestions:', error);
+        const inputValue = e.target.value;
+        setDestination(inputValue);
+
+        if (inputValue.length >= 3) {
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
+                    params: { input: inputValue },
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+                setDestinationSuggestions(response.data);
+            } catch (error) {
+                console.error('Error fetching suggestions:', error);
+            }
+        } else {
+            setDestinationSuggestions([]);
         }
     };
 
@@ -91,7 +116,7 @@ const Home = () => {
     };
 
     useGSAP(() => {
-        if (panelOpen) {
+        if (panelOpen && panelRef.current) {
             gsap.to(panelRef.current, {
                 height: '70%',
                 padding: 24,
@@ -99,7 +124,7 @@ const Home = () => {
             gsap.to(panelCloseRef.current, {
                 opacity: 1,
             });
-        } else {
+        } else if (panelRef.current) {
             gsap.to(panelRef.current, {
                 height: '0%',
                 padding: 0,
@@ -111,11 +136,11 @@ const Home = () => {
     }, [panelOpen]);
 
     useGSAP(() => {
-        if (vehiclePanel) {
+        if (vehiclePanel && vehiclePanelRef.current) {
             gsap.to(vehiclePanelRef.current, {
                 transform: 'translateY(0)',
             });
-        } else {
+        } else if (vehiclePanelRef.current) {
             gsap.to(vehiclePanelRef.current, {
                 transform: 'translateY(100%)',
             });
@@ -123,11 +148,11 @@ const Home = () => {
     }, [vehiclePanel]);
 
     useGSAP(() => {
-        if (confirmRidePanel) {
+        if (confirmRidePanel && confirmRidePanelRef.current) {
             gsap.to(confirmRidePanelRef.current, {
                 transform: 'translateY(0)',
             });
-        } else {
+        } else if (confirmRidePanelRef.current) {
             gsap.to(confirmRidePanelRef.current, {
                 transform: 'translateY(100%)',
             });
@@ -135,11 +160,11 @@ const Home = () => {
     }, [confirmRidePanel]);
 
     useGSAP(() => {
-        if (vehicleFound) {
+        if (vehicleFound && vehicleFoundRef.current) {
             gsap.to(vehicleFoundRef.current, {
                 transform: 'translateY(0)',
             });
-        } else {
+        } else if (vehicleFoundRef.current) {
             gsap.to(vehicleFoundRef.current, {
                 transform: 'translateY(100%)',
             });
@@ -147,11 +172,11 @@ const Home = () => {
     }, [vehicleFound]);
 
     useGSAP(() => {
-        if (waitingForDriver) {
+        if (waitingForDriver && waitingForDriverRef.current) {
             gsap.to(waitingForDriverRef.current, {
                 transform: 'translateY(0)',
             });
-        } else {
+        } else if (waitingForDriverRef.current) {
             gsap.to(waitingForDriverRef.current, {
                 transform: 'translateY(100%)',
             });
@@ -162,48 +187,57 @@ const Home = () => {
         setVehiclePanel(true);
         setPanelOpen(false);
 
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/rides/get-fare`, {
-            params: { pickup, destination },
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-        });
-
-        setFare(response.data);
-
-        // Fetch coordinates for source and destination
-        const sourceResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`, {
-            params: { address: pickup },
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-        });
-
-        const destinationResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`, {
-            params: { address: destination },
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-        });
-
-        setSourceCoords(sourceResponse.data);
-        setDestinationCoords(destinationResponse.data);
-    };
-
-    const createRide = async () => {
-        const response = await axios.post(
-            `${import.meta.env.VITE_BASE_URL}/rides/create`,
-            {
-                pickup,
-                destination,
-                vehicleType,
-            },
-            {
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/rides/get-fare`, {
+                params: { pickup, destination },
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
-            }
-        );
+            });
+            setFare(response.data);
+
+            const sourceResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`, {
+                params: { address: pickup },
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
+            const destinationResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`, {
+                params: { address: destination },
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
+            setSourceCoords(sourceResponse.data);
+            setDestinationCoords(destinationResponse.data);
+        } catch (error) {
+            console.error('Error fetching fare or coordinates:', error);
+        }
+    };
+
+    const createRide = async () => {
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_BASE_URL}/rides/create`,
+                {
+                    pickup,
+                    destination,
+                    vehicleType,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                }
+            );
+            setRide(response.data);
+            setShowRideDetailsPopup(true); // Show the popup after ride creation
+            console.log('Ride created:', response.data); // Debugging log
+        } catch (error) {
+            console.error('Error creating ride:', error);
+        }
     };
 
     return (
@@ -264,10 +298,9 @@ const Home = () => {
                     <button onClick={findTrip} className='bg-black text-white px-4 py-2 rounded-lg mt-3 w-full '>
                         Find Trip
                     </button>
-                    <button onClick={()=>{setPanelOpen(false)}} className='bg-red-600 text-white px-4 py-2 rounded-lg mt-3 w-full'>
+                    <button onClick={() => setPanelOpen(false)} className='bg-red-600 text-white px-4 py-2 rounded-lg mt-3 w-full'>
                         Close
                     </button>
-
                 </div>
                 <div ref={panelRef} className='bg-white h-0'>
                     <LocationSearchPanel
@@ -317,6 +350,43 @@ const Home = () => {
                     waitingForDriver={waitingForDriver}
                 />
             </div>
+
+            {/* Ride Details Popup */}
+            {showRideDetailsPopup && ride && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg w-11/12 max-w-md">
+                        <h2 className="text-2xl font-semibold mb-4">Ride Details</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <h3 className="text-lg font-medium">Pickup Location</h3>
+                                <p className="text-sm text-gray-600">{ride.pickup}</p>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-medium">Destination</h3>
+                                <p className="text-sm text-gray-600">{ride.destination}</p>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-medium">Fare</h3>
+                                <p className="text-sm text-gray-600">₹{ride.fare}</p>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-medium">Status</h3>
+                                <p className="text-sm text-gray-600">{ride.status}</p>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-medium">OTP</h3>
+                                <p className="text-sm text-gray-600">{ride.otp}</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setShowRideDetailsPopup(false)}
+                            className="mt-4 w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-300"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -1,3 +1,4 @@
+// frontend/src/pages/Riding.jsx
 import React, { useEffect, useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { SocketContext } from '../context/SocketContext';
