@@ -76,7 +76,11 @@ module.exports.confirmRide = async (req, res) => {
 
         sendMessageToSocketId(ride.user.socketId, {
             event: 'ride-confirmed',
-            data: ride
+            data: {
+                ...ride.toObject(),
+                otp: ride.otp, // Ensure OTP is included
+                captain: ride.captain, // Ensure captain details are included
+            }
         })
 
         return res.status(200).json(ride);
@@ -150,6 +154,17 @@ module.exports.getCaptainRideHistory = async (req, res) => {
     try {
         const rides = await rideModel.find({ captain: req.captain._id }).sort({ createdAt: -1 });
         res.status(200).json(rides);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+module.exports.getRideById = async (req, res) => {
+    try {
+        const ride = await rideModel.findById(req.params.rideId)
+            .populate('user')
+            .populate('captain');
+        res.status(200).json(ride);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
