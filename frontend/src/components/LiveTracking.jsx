@@ -7,12 +7,24 @@ const LiveTracking = ({ sourceCoords, destinationCoords }) => {
     const [marker, setMarker] = useState(null);
     const { socket } = useContext(SocketContext);
 
-    // Validate coordinates
-    const validateCoordinates = (coords) => {
-        return coords && typeof coords.lat === 'number' && typeof coords.lng === 'number';
-    };
+    useEffect(() => {
+        // Check if the script is already loaded
+        if (window.google && window.google.maps) {
+            initializeMap();
+        } else {
+            const script = document.createElement('script');
+            script.src = `https://maps.gomaps.pro/maps/api/js?key=${import.meta.env.VITE_GOMAPPRO_API_KEY}&libraries=places,geometry`;
+            script.async = true;
+            script.defer = true;
+            script.onload = () => initializeMap();
+            document.body.appendChild(script);
 
-    // Initialize the map
+            return () => {
+                document.body.removeChild(script);
+            };
+        }
+    }, []);
+
     const initializeMap = () => {
         const mapElement = document.getElementById('map');
         if (mapElement && !map) {
@@ -32,79 +44,46 @@ const LiveTracking = ({ sourceCoords, destinationCoords }) => {
         }
     };
 
-    // Load Google Maps script and initialize the map
     useEffect(() => {
-        if (window.google && window.google.maps) {
-            initializeMap();
-        } else {
-            const script = document.createElement('script');
-            script.src = `https://maps.gomaps.pro/maps/api/js?key=${import.meta.env.VITE_GOMAPPRO_API_KEY}&libraries=places,geometry`;
-            script.async = true;
-            script.defer = true;
-            script.onload = () => initializeMap();
-            document.body.appendChild(script);
-
-            return () => {
-                document.body.removeChild(script);
-            };
-        }
-    }, []);
-
-    // Update the map center and marker position when currentPosition changes
-    useEffect(() => {
-        if (map && marker && validateCoordinates(currentPosition)) {
+        if (map && marker) {
             map.setCenter(currentPosition);
             marker.setPosition(currentPosition);
         }
-    }, [currentPosition, map, marker]);
+    }, [currentPosition]);
 
-    // Get the user's current location
     useEffect(() => {
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const { latitude, longitude } = position.coords;
-                    setCurrentPosition({ lat: latitude, lng: longitude });
-                },
-                (error) => {
-                    console.error('Error getting user location:', error);
-                }
-            );
+            navigator.geolocation.getCurrentPosition((position) => {
+                const { latitude, longitude } = position.coords;
+                setCurrentPosition({ lat: latitude, lng: longitude });
+            });
         }
     }, []);
 
-    // Render directions between source and destination
     useEffect(() => {
-        if (map && validateCoordinates(sourceCoords) && validateCoordinates(destinationCoords)) {
+        if (map && sourceCoords && destinationCoords) {
             const directionsService = new window.google.maps.DirectionsService();
             const directionsRenderer = new window.google.maps.DirectionsRenderer();
             directionsRenderer.setMap(map);
 
             const request = {
-                origin: new window.google.maps.LatLng(sourceCoords.lat, sourceCoords.lng),
-                destination: new window.google.maps.LatLng(destinationCoords.lat, destinationCoords.lng),
+                origin: new window.google.maps.LatLng(sourceCoords.ltd, sourceCoords.lng),
+                destination: new window.google.maps.LatLng(destinationCoords.ltd, destinationCoords.lng),
                 travelMode: window.google.maps.TravelMode.DRIVING,
             };
 
             directionsService.route(request, (result, status) => {
                 if (status === window.google.maps.DirectionsStatus.OK) {
                     directionsRenderer.setDirections(result);
-                } else {
-                    console.error('Error rendering directions:', status);
                 }
             });
         }
     }, [map, sourceCoords, destinationCoords]);
 
-    // Listen for captain location updates
     useEffect(() => {
         if (socket) {
             socket.on('captain-location-update', (location) => {
-                if (validateCoordinates(location)) {
-                    setCurrentPosition({ lat: location.ltd, lng: location.lng });
-                } else {
-                    console.error('Invalid captain location:', location);
-                }
+                setCurrentPosition({ lat: location.ltd, lng: location.lng });
             });
         }
 

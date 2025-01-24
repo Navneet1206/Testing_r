@@ -45,17 +45,12 @@ const Home = () => {
         socket.emit('join', { userType: 'user', userId: user._id });
     }, [user]);
 
-    // socket.on('ride-confirmed', (ride) => {
-    //     setVehicleFound(false);
-    //     setWaitingForDriver(true);
-    //     setRide(ride);
-    // });
-    socket.on('ride-confirmed', (data) => {
+    socket.on('ride-confirmed', (ride) => {
         setVehicleFound(false);
         setWaitingForDriver(true);
-        setRide(data); // Ensure ride data includes OTP and captain details
+        setRide(ride);
     });
-    
+
     socket.on('ride-started', (ride) => {
         setWaitingForDriver(false);
         navigate('/riding', { state: { ride } });

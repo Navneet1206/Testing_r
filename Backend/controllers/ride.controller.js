@@ -143,12 +143,15 @@ module.exports.endRide = async (req, res) => {
 // Backend/controllers/ride.controller.js
 module.exports.getUserRideHistory = async (req, res) => {
     try {
-        const rides = await rideModel.find({ user: req.user._id }).sort({ createdAt: -1 });
+        const rides = await rideModel.find({ user: req.user._id })
+            .populate('captain', 'fullname vehicle')
+            .sort({ createdAt: -1 });
         res.status(200).json(rides);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 };
+
 
 module.exports.getCaptainRideHistory = async (req, res) => {
     try {
