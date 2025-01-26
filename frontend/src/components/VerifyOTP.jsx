@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -17,7 +16,7 @@ const VerifyOTP = ({ type, email, mobileNumber }) => {
     e.preventDefault();
     try {
       const endpoint = type === 'email' ? 'verify-email-otp' : 'verify-mobile-otp';
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/${endpoint}`, {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/${endpoint}`, {
         email: finalEmail,
         mobileNumber: finalMobileNumber,
         otp,
@@ -27,7 +26,7 @@ const VerifyOTP = ({ type, email, mobileNumber }) => {
         if (type === 'email') {
           navigate('/verify-mobile-otp', { state: { email: finalEmail, mobileNumber: finalMobileNumber } });
         } else {
-          navigate('/home');
+          navigate('/captain-home');
         }
       }
     } catch (error) {

@@ -89,11 +89,10 @@ const CaptainSignup = () => {
     setCurrentStep((prev) => prev - 1);
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
+  
     const submitFormData = new FormData();
     submitFormData.append('fullname[firstname]', formData.firstName);
     submitFormData.append('fullname[lastname]', formData.lastName);
@@ -105,11 +104,11 @@ const CaptainSignup = () => {
     submitFormData.append('vehicle[plate]', formData.vehicle.plate);
     submitFormData.append('vehicle[capacity]', formData.vehicle.capacity);
     submitFormData.append('vehicle[vehicleType]', formData.vehicle.type);
-
+  
     if (profilePhoto) {
       submitFormData.append('profilePhoto', profilePhoto);
     }
-
+  
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/captains/register`,
@@ -118,7 +117,7 @@ const CaptainSignup = () => {
           headers: { 'Content-Type': 'multipart/form-data' },
         }
       );
-
+  
       if (response.status === 201) {
         toast.success('OTP sent to your email and mobile number!');
         navigate('/verify-email-otp', {

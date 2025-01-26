@@ -50,7 +50,6 @@ module.exports.registerCaptain = async (req, res, next) => {
   });
 };
 
-
 module.exports.verifyEmailOTP = async (req, res, next) => {
   const { email, otp } = req.body;
 
@@ -88,6 +87,7 @@ module.exports.verifyMobileOTP = async (req, res, next) => {
 
   res.status(200).json({ message: "Mobile number verified successfully" });
 };
+
 
 module.exports.loginCaptain = async (req, res, next) => {
   const errors = validationResult(req);
