@@ -25,9 +25,14 @@ module.exports.sendEmailOTP = async (email, otp) => {
 };
 
 module.exports.sendSMSOTP = async (mobileNumber, otp) => {
-  await twilioClient.messages.create({
-    body: `Your OTP for signup is: ${otp}`,
-    from: process.env.TWILIO_PHONE_NUMBER,
-    to: mobileNumber,
-  });
-};
+    // Ensure mobileNumber starts with +91
+    if (!mobileNumber.startsWith('+91')) {
+      mobileNumber = `+91${mobileNumber}`;
+    }
+  
+    await twilioClient.messages.create({
+      body: `Your OTP for signup is: ${otp}`,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: mobileNumber,
+    });
+  };

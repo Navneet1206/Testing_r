@@ -4,9 +4,9 @@ import { useLocation } from 'react-router-dom';
 
 const VerifyMobileOTP = () => {
   const location = useLocation();
-  const { mobileNumber } = location.state || {};
+  const { email, mobileNumber } = location.state || {};
 
-  return <VerifyOTP type="mobile" mobileNumber={mobileNumber} />;
+  return <VerifyOTP type="mobile" email={email} mobileNumber={mobileNumber} />;
 };
 
 export default VerifyMobileOTP;

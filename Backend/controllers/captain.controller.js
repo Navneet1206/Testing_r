@@ -25,6 +25,9 @@ module.exports.registerCaptain = async (req, res, next) => {
   const emailOTP = generateOTP();
   const mobileOTP = generateOTP();
 
+  // Store mobile number without +91 in the database
+  const storedMobileNumber = mobileNumber.replace('+91', '');
+
   const captain = await captainService.createCaptain({
     firstname: fullname.firstname,
     lastname: fullname.lastname,
@@ -35,18 +38,18 @@ module.exports.registerCaptain = async (req, res, next) => {
     capacity: vehicle.capacity,
     vehicleType: vehicle.vehicleType,
     profilePhoto,
-    mobileNumber,
+    mobileNumber: storedMobileNumber, // Store without +91
     drivingLicense,
     emailOTP,
     mobileOTP,
   });
 
   await sendEmailOTP(email, emailOTP);
-  await sendSMSOTP(mobileNumber, mobileOTP);
+  await sendSMSOTP(mobileNumber, mobileOTP); // Send with +91
 
   res.status(201).json({
     message: "OTP sent to email and mobile number",
-    captain: { email, mobileNumber },
+    captain: { email, mobileNumber: storedMobileNumber },
   });
 };
 

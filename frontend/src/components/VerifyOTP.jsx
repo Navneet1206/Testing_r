@@ -38,6 +38,11 @@ const VerifyOTP = ({ type, email, mobileNumber }) => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-50 to-purple-50 p-4">
       <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Verify OTP</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          {type === 'email'
+            ? `Please enter the OTP sent to your email (${finalEmail}).`
+            : `Please enter the OTP sent to your mobile number (${finalMobileNumber}).`}
+        </p>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">OTP</label>
