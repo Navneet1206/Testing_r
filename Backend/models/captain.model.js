@@ -58,15 +58,15 @@ const captainSchema = new mongoose.Schema({
   },
   profilePhoto: {
     type: String,
-    default: ''
+    default: '',
   },
   mobileNumber: {
     type: String,
-    required: true
+    required: true, // Ensure this is required
   },
   drivingLicense: {
     type: String,
-    required: true
+    required: true, // Ensure this is required
   },
   location: {
     type: {

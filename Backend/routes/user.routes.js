@@ -4,7 +4,7 @@ const { body } = require("express-validator");
 const userController = require('../controllers/user.controller');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
-const authMiddleware = require('../path/to/authMiddleware');
+const authMiddleware = require('../middlewares/auth.middleware'); // Corrected path
 
 router.post('/register', upload.single('profilePhoto'), [
   body('email').isEmail().withMessage('Invalid Email'),

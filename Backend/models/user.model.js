@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema({
   },
   mobileNumber: {
     type: String,
-    required: true,
+    required: true, // Ensure this is required
   },
   socketId: {
     type: String,
