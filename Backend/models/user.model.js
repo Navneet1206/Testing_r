@@ -36,6 +36,22 @@ const userSchema = new mongoose.Schema({
   socketId: {
     type: String,
   },
+  emailOTP: {
+    type: String,
+    select: false,
+  },
+  mobileOTP: {
+    type: String,
+    select: false,
+  },
+  emailVerified: {
+    type: Boolean,
+    default: false,
+  },
+  mobileVerified: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 userSchema.methods.generateAuthToken = function () {

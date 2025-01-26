@@ -77,6 +77,22 @@ const captainSchema = new mongoose.Schema({
       type: [Number],
     },
   },
+  emailOTP: {
+    type: String,
+    select: false,
+  },
+  mobileOTP: {
+    type: String,
+    select: false,
+  },
+  emailVerified: {
+    type: Boolean,
+    default: false,
+  },
+  mobileVerified: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 captainSchema.index({ location: '2dsphere' });

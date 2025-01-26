@@ -1,15 +1,38 @@
-const captainModel = require('../models/captain.model');
+// Backend/services/captain.service.js
+const captainModel = require("../models/captain.model");
 
 module.exports.createCaptain = async ({
-  firstname, lastname, email, password, color, plate, capacity, vehicleType, profilePhoto, mobileNumber, drivingLicense
+  firstname,
+  lastname,
+  email,
+  password,
+  color,
+  plate,
+  capacity,
+  vehicleType,
+  profilePhoto,
+  mobileNumber,
+  drivingLicense,
+  emailOTP,
+  mobileOTP,
 }) => {
-  if (!firstname || !email || !password || !color || !plate || !capacity || !vehicleType || !mobileNumber || !drivingLicense) {
-    throw new Error('All fields are required');
+  if (
+    !firstname ||
+    !email ||
+    !password ||
+    !color ||
+    !plate ||
+    !capacity ||
+    !vehicleType ||
+    !mobileNumber ||
+    !drivingLicense
+  ) {
+    throw new Error("All fields are required");
   }
   const captain = await captainModel.create({
     fullname: {
       firstname,
-      lastname
+      lastname,
     },
     email,
     password,
@@ -17,16 +40,18 @@ module.exports.createCaptain = async ({
       color,
       plate,
       capacity,
-      vehicleType
+      vehicleType,
     },
     profilePhoto,
     mobileNumber,
     drivingLicense,
     location: {
-      type: 'Point',
-      coordinates: [0, 0]
-    }
+      type: "Point",
+      coordinates: [0, 0],
+    },
+    emailOTP,
+    mobileOTP,
   });
 
   return captain;
-}
+};

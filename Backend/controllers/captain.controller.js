@@ -1,43 +1,95 @@
+// Backend/controllers/captain.controller.js
 const captainModel = require("../models/captain.model");
 const captainService = require("../services/captain.service");
 const { validationResult } = require("express-validator");
 const blackListTokenModel = require("../models/blackListToken.model");
+const { generateOTP } = require("../utils/otp.utils");
+const { sendEmailOTP, sendSMSOTP } = require("../services/communication.service");
 
 module.exports.registerCaptain = async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-  
-    const { fullname, email, password, vehicle, mobileNumber, drivingLicense } = req.body;
-    const profilePhoto = req.file ? req.file.path : "";
-  
-    const isCaptainAlreadyExist = await captainModel.findOne({ email });
-  
-    if (isCaptainAlreadyExist) {
-      return res.status(400).json({ message: "Captain already exists" });
-    }
-  
-    const hashedPassword = await captainModel.hashPassword(password);
-  
-    const captain = await captainService.createCaptain({
-      firstname: fullname.firstname,
-      lastname: fullname.lastname,
-      email,
-      password: hashedPassword,
-      color: vehicle.color,
-      plate: vehicle.plate,
-      capacity: vehicle.capacity,
-      vehicleType: vehicle.vehicleType,
-      profilePhoto,
-      mobileNumber,
-      drivingLicense,
-    });
-  
-    const token = captain.generateAuthToken();
-  
-    res.status(201).json({ token, captain });
-  };
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { fullname, email, password, vehicle, mobileNumber, drivingLicense } =
+    req.body;
+  const profilePhoto = req.file ? req.file.path : "";
+
+  const isCaptainAlreadyExist = await captainModel.findOne({ email });
+
+  if (isCaptainAlreadyExist) {
+    return res.status(400).json({ message: "Captain already exists" });
+  }
+
+  const hashedPassword = await captainModel.hashPassword(password);
+
+  const emailOTP = generateOTP();
+  const mobileOTP = generateOTP();
+
+  const captain = await captainService.createCaptain({
+    firstname: fullname.firstname,
+    lastname: fullname.lastname,
+    email,
+    password: hashedPassword,
+    color: vehicle.color,
+    plate: vehicle.plate,
+    capacity: vehicle.capacity,
+    vehicleType: vehicle.vehicleType,
+    profilePhoto,
+    mobileNumber,
+    drivingLicense,
+    emailOTP,
+    mobileOTP,
+  });
+
+  await sendEmailOTP(email, emailOTP);
+  await sendSMSOTP(mobileNumber, mobileOTP);
+
+  res
+    .status(201)
+    .json({ message: "OTP sent to email and mobile number", captain });
+};
+
+module.exports.verifyEmailOTP = async (req, res, next) => {
+  const { email, otp } = req.body;
+
+  const captain = await captainModel.findOne({ email }).select("+emailOTP");
+
+  if (!captain) {
+    return res.status(404).json({ message: "Captain not found" });
+  }
+
+  if (captain.emailOTP !== otp) {
+    return res.status(400).json({ message: "Invalid OTP" });
+  }
+
+  captain.emailVerified = true;
+  await captain.save();
+
+  res.status(200).json({ message: "Email verified successfully" });
+};
+
+module.exports.verifyMobileOTP = async (req, res, next) => {
+  const { mobileNumber, otp } = req.body;
+
+  const captain = await captainModel
+    .findOne({ mobileNumber })
+    .select("+mobileOTP");
+
+  if (!captain) {
+    return res.status(404).json({ message: "Captain not found" });
+  }
+
+  if (captain.mobileOTP !== otp) {
+    return res.status(400).json({ message: "Invalid OTP" });
+  }
+
+  captain.mobileVerified = true;
+  await captain.save();
+
+  res.status(200).json({ message: "Mobile number verified successfully" });
+};
 
 module.exports.loginCaptain = async (req, res, next) => {
   const errors = validationResult(req);
