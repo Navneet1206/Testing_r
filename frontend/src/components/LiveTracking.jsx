@@ -8,7 +8,6 @@ const LiveTracking = ({ sourceCoords, destinationCoords }) => {
     const { socket } = useContext(SocketContext);
 
     useEffect(() => {
-        // Check if the script is already loaded
         if (window.google && window.google.maps) {
             initializeMap();
         } else {
@@ -31,10 +30,10 @@ const LiveTracking = ({ sourceCoords, destinationCoords }) => {
             const newMap = new window.google.maps.Map(mapElement, {
                 center: currentPosition,
                 zoom: 15,
+                gestureHandling: 'greedy',
             });
             setMap(newMap);
 
-            // Use standard Marker instead of AdvancedMarkerElement
             const newMarker = new window.google.maps.Marker({
                 position: currentPosition,
                 map: newMap,
@@ -94,7 +93,7 @@ const LiveTracking = ({ sourceCoords, destinationCoords }) => {
         };
     }, [socket]);
 
-    return <div id="map" style={{ width: '100%', height: '100%' }}></div>;
+    return <div id="map" style={{ width: '100%', height: '500px' }}></div>;
 };
 
 export default LiveTracking;
