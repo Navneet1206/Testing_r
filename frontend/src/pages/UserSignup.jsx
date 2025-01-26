@@ -59,18 +59,18 @@ const UserSignup = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
+  
     const submitFormData = new FormData();
     submitFormData.append('fullname[firstname]', formData.firstName);
     submitFormData.append('fullname[lastname]', formData.lastName);
     submitFormData.append('email', formData.email);
     submitFormData.append('password', formData.password);
     submitFormData.append('mobileNumber', formData.mobileNumber);
-
+  
     if (profilePhoto) {
       submitFormData.append('profilePhoto', profilePhoto);
     }
-
+  
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/users/register`,
@@ -79,13 +79,12 @@ const UserSignup = () => {
           headers: { 'Content-Type': 'multipart/form-data' },
         }
       );
-
+  
       if (response.status === 201) {
-        const { user, token } = response.data;
+        const { user } = response.data;
         setUser(user);
-        localStorage.setItem('token', token);
-        toast.success('Signup successful! Redirecting...');
-        setTimeout(() => navigate('/home'), 2000); // Redirect after 2 seconds
+        toast.success('OTP sent to your email and mobile number!');
+        navigate('/verify-email-otp', { state: { email: formData.email, mobileNumber: formData.mobileNumber } });
       }
     } catch (error) {
       console.error('Signup failed', error.response?.data || error.message);

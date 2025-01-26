@@ -93,9 +93,9 @@ const CaptainSignup = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
+  
     const submitFormData = new FormData();
-
+  
     // Append top-level fields
     submitFormData.append('fullname[firstname]', formData.firstName);
     submitFormData.append('fullname[lastname]', formData.lastName);
@@ -103,18 +103,18 @@ const CaptainSignup = () => {
     submitFormData.append('password', formData.password);
     submitFormData.append('mobileNumber', formData.mobileNumber);
     submitFormData.append('drivingLicense', formData.drivingLicense);
-
+  
     // Append nested vehicle object
     submitFormData.append('vehicle[color]', formData.vehicle.color);
     submitFormData.append('vehicle[plate]', formData.vehicle.plate);
     submitFormData.append('vehicle[capacity]', formData.vehicle.capacity);
     submitFormData.append('vehicle[vehicleType]', formData.vehicle.type);
-
+  
     // Append profile photo if it exists
     if (profilePhoto) {
       submitFormData.append('profilePhoto', profilePhoto);
     }
-
+  
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/captains/register`,
@@ -123,13 +123,12 @@ const CaptainSignup = () => {
           headers: { 'Content-Type': 'multipart/form-data' },
         }
       );
-
+  
       if (response.status === 201) {
-        const { captain, token } = response.data;
+        const { captain } = response.data;
         setCaptain(captain);
-        localStorage.setItem('token', token);
-        toast.success('Signup successful! Redirecting...');
-        setTimeout(() => navigate('/captain-home'), 2000); // Redirect after 2 seconds
+        toast.success('OTP sent to your email and mobile number!');
+        navigate('/verify-email-otp', { state: { email: formData.email, mobileNumber: formData.mobileNumber } });
       }
     } catch (error) {
       console.error('Signup failed', error.response?.data || error.message);

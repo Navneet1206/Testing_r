@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-const VerifyOTP = ({ email, mobileNumber, type }) => {
+const VerifyOTP = ({ type }) => {
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const { email, mobileNumber } = location.state || {};
 
   const handleSubmit = async (e) => {
     e.preventDefault();

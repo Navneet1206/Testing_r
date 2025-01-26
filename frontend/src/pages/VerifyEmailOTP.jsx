@@ -6,7 +6,7 @@ const VerifyEmailOTP = () => {
   const location = useLocation();
   const { email } = location.state || {};
 
-  return <VerifyOTP email={email} type="email" />;
+  return <VerifyOTP type="email" />;
 };
 
 export default VerifyEmailOTP;

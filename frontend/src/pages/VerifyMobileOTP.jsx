@@ -6,7 +6,7 @@ const VerifyMobileOTP = () => {
   const location = useLocation();
   const { mobileNumber } = location.state || {};
 
-  return <VerifyOTP mobileNumber={mobileNumber} type="mobile" />;
+  return <VerifyOTP type="mobile" />;
 };
 
 export default VerifyMobileOTP;
