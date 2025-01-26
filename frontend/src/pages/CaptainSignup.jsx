@@ -1,3 +1,4 @@
+// frontend/src/pages/CaptainSignup.jsx
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -15,52 +16,38 @@ const CaptainSignup = () => {
   const [vehiclePlate, setVehiclePlate] = useState('');
   const [vehicleCapacity, setVehicleCapacity] = useState('');
   const [vehicleType, setVehicleType] = useState('');
-  const [location, setLocation] = useState({ type: 'Point', coordinates: [0, 0] });
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [drivingLicense, setDrivingLicense] = useState('');
+  const [profilePhoto, setProfilePhoto] = useState(null);
 
   const { captain, setCaptain } = React.useContext(CaptainDataContext);
 
-  const getLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setLocation({
-            type: 'Point',
-            coordinates: [longitude, latitude],
-          });
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-        }
-      );
-    } else {
-      console.error('Geolocation is not supported by this browser.');
-    }
-  };
-
   const submitHandler = async (e) => {
     e.preventDefault();
-    getLocation(); // Fetch location before submitting
 
-    const captainData = {
-      fullname: {
-        firstname: firstName,
-        lastname: lastName,
-      },
-      email: email,
-      password: password,
-      vehicle: {
-        color: vehicleColor,
-        plate: vehiclePlate,
-        capacity: vehicleCapacity,
-        vehicleType: vehicleType,
-      },
-      location: location, // Include location in the request
-    };
+    const formData = new FormData();
+    formData.append('fullname[firstname]', firstName);
+    formData.append('fullname[lastname]', lastName);
+    formData.append('email', email);
+    formData.append('password', password);
+    formData.append('vehicle[color]', vehicleColor);
+    formData.append('vehicle[plate]', vehiclePlate);
+    formData.append('vehicle[capacity]', vehicleCapacity);
+    formData.append('vehicle[vehicleType]', vehicleType);
+    formData.append('mobileNumber', mobileNumber);
+    formData.append('drivingLicense', drivingLicense);
+    if (profilePhoto) {
+      formData.append('profilePhoto', profilePhoto);
+    }
 
     const response = await axios.post(
       `${import.meta.env.VITE_BASE_URL}/captains/register`,
-      captainData
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
     );
 
     if (response.status === 201) {
@@ -69,15 +56,6 @@ const CaptainSignup = () => {
       localStorage.setItem('token', data.token);
       navigate('/captain-home');
     }
-
-    setEmail('');
-    setFirstName('');
-    setLastName('');
-    setPassword('');
-    setVehicleColor('');
-    setVehiclePlate('');
-    setVehicleCapacity('');
-    setVehicleType('');
   };
 
   return (
@@ -152,6 +130,48 @@ const CaptainSignup = () => {
               placeholder="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-300"
+            />
+          </div>
+
+          {/* Mobile Number Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Mobile Number
+            </label>
+            <input
+              required
+              type="text"
+              placeholder="Mobile Number"
+              value={mobileNumber}
+              onChange={(e) => setMobileNumber(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-300"
+            />
+          </div>
+
+          {/* Driving License Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Driving License
+            </label>
+            <input
+              required
+              type="text"
+              placeholder="Driving License"
+              value={drivingLicense}
+              onChange={(e) => setDrivingLicense(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-300"
+            />
+          </div>
+
+          {/* Profile Photo Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Profile Photo
+            </label>
+            <input
+              type="file"
+              onChange={(e) => setProfilePhoto(e.target.files[0])}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-300"
             />
           </div>

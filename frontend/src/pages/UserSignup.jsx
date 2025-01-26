@@ -1,57 +1,50 @@
+// frontend/src/pages/UserSignup.jsx
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { UserDataContext } from '../context/UserContext';
-import { ClipLoader } from 'react-spinners'; // For loading spinner
-import { toast, ToastContainer } from 'react-toastify'; // For popup messages
-import 'react-toastify/dist/ReactToastify.css'; // CSS for toast notifications
+import 'remixicon/fonts/remixicon.css';
 
 const UserSignup = () => {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [loading, setLoading] = useState(false); // Loading state
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [profilePhoto, setProfilePhoto] = useState(null);
 
   const { user, setUser } = useContext(UserDataContext);
-  const navigate = useNavigate();
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    setLoading(true); // Start loading
 
-    const newUser = {
-      fullname: {
-        firstname: firstName,
-        lastname: lastName,
-      },
-      email: email,
-      password: password,
-    };
+    const formData = new FormData();
+    formData.append('fullname[firstname]', firstName);
+    formData.append('fullname[lastname]', lastName);
+    formData.append('email', email);
+    formData.append('password', password);
+    formData.append('mobileNumber', mobileNumber);
+    if (profilePhoto) {
+      formData.append('profilePhoto', profilePhoto);
+    }
 
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/users/register`,
-        newUser
-      );
-
-      if (response.status === 201) {
-        const data = response.data;
-        setUser(data.user);
-        localStorage.setItem('token', data.token);
-        toast.success('Signup successful! Redirecting...'); // Success popup
-        setTimeout(() => {
-          navigate('/home');
-        }, 2000); // Redirect after 2 seconds
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/users/register`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       }
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Signup failed. Please try again.'); // Error popup
-    } finally {
-      setLoading(false); // Stop loading
-      setEmail('');
-      setFirstName('');
-      setLastName('');
-      setPassword('');
+    );
+
+    if (response.status === 201) {
+      const data = response.data;
+      setUser(data.user);
+      localStorage.setItem('token', data.token);
+      navigate('/home');
     }
   };
 
@@ -61,7 +54,7 @@ const UserSignup = () => {
         {/* Logo and Heading */}
         <div className="text-center mb-8">
           <img
-            className="w-16 mx-auto mb-4 animate-bounce" // Added animation
+            className="w-16 mx-auto mb-4"
             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYQy-OIkA6In0fTvVwZADPmFFibjmszu2A0g&s"
             alt="Logo"
           />
@@ -131,17 +124,39 @@ const UserSignup = () => {
             />
           </div>
 
+          {/* Mobile Number Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Mobile Number
+            </label>
+            <input
+              required
+              type="text"
+              placeholder="Mobile Number"
+              value={mobileNumber}
+              onChange={(e) => setMobileNumber(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-300"
+            />
+          </div>
+
+          {/* Profile Photo Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Profile Photo
+            </label>
+            <input
+              type="file"
+              onChange={(e) => setProfilePhoto(e.target.files[0])}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-300"
+            />
+          </div>
+
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading} // Disable button when loading
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition duration-300 flex items-center justify-center"
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition duration-300"
           >
-            {loading ? (
-              <ClipLoader size={20} color="#ffffff" /> // Loading spinner
-            ) : (
-              'Create Account'
-            )}
+            Create Account
           </button>
         </form>
 
@@ -162,9 +177,6 @@ const UserSignup = () => {
           </p>
         </div>
       </div>
-
-      {/* Toast Container */}
-      <ToastContainer position="top-center" autoClose={3000} />
     </div>
   );
 };

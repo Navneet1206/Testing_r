@@ -56,6 +56,18 @@ const captainSchema = new mongoose.Schema({
       enum: ['car', 'motorcycle', 'auto'],
     },
   },
+  profilePhoto: {
+    type: String,
+    default: ''
+  },
+  mobileNumber: {
+    type: String,
+    required: true
+  },
+  drivingLicense: {
+    type: String,
+    required: true
+  },
   location: {
     type: {
       type: String, // GeoJSON type
