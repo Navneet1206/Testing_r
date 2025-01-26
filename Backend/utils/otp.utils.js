@@ -1,4 +1,3 @@
-// Backend/utils/otp.utils.js
 const crypto = require('crypto');
 
 function generateOTP(length = 6) {

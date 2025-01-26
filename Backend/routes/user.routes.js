@@ -1,4 +1,3 @@
-// Backend/routes/user.routes.js
 const express = require("express");
 const router = express.Router();
 const { body } = require("express-validator");
@@ -37,9 +36,7 @@ router.post(
 router.post(
   "/verify-mobile-otp",
   [
-    body("mobileNumber")
-      .isLength({ min: 10 })
-      .withMessage("Invalid Mobile Number"),
+    body("mobileNumber").isLength({ min: 10 }).withMessage("Invalid Mobile Number"),
     body("otp").isLength({ min: 6, max: 6 }).withMessage("Invalid OTP"),
   ],
   userController.verifyMobileOTP
@@ -59,22 +56,5 @@ router.post(
 router.get("/profile", authMiddleware.authUser, userController.getUserProfile);
 
 router.get("/logout", authMiddleware.authUser, userController.logoutUser);
-router.post(
-  "/verify-email-otp",
-  [
-    body("email").isEmail().withMessage("Invalid Email"),
-    body("otp").isLength({ min: 6, max: 6 }).withMessage("Invalid OTP"),
-  ],
-  userController.verifyEmailOTP
-);
-
-router.post(
-  "/verify-mobile-otp",
-  [
-    body("mobileNumber").isLength({ min: 10 }).withMessage("Invalid Mobile Number"),
-    body("otp").isLength({ min: 6, max: 6 }).withMessage("Invalid OTP"),
-  ],
-  userController.verifyMobileOTP
-);
 
 module.exports = router;

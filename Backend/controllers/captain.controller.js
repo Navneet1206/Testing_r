@@ -1,4 +1,3 @@
-// Backend/controllers/captain.controller.js
 const captainModel = require("../models/captain.model");
 const captainService = require("../services/captain.service");
 const { validationResult } = require("express-validator");
@@ -12,8 +11,7 @@ module.exports.registerCaptain = async (req, res, next) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { fullname, email, password, vehicle, mobileNumber, drivingLicense } =
-    req.body;
+  const { fullname, email, password, vehicle, mobileNumber, drivingLicense } = req.body;
   const profilePhoto = req.file ? req.file.path : "";
 
   const isCaptainAlreadyExist = await captainModel.findOne({ email });
@@ -46,9 +44,7 @@ module.exports.registerCaptain = async (req, res, next) => {
   await sendEmailOTP(email, emailOTP);
   await sendSMSOTP(mobileNumber, mobileOTP);
 
-  res
-    .status(201)
-    .json({ message: "OTP sent to email and mobile number", captain });
+  res.status(201).json({ message: "OTP sent to email and mobile number", captain });
 };
 
 module.exports.verifyEmailOTP = async (req, res, next) => {
@@ -73,9 +69,7 @@ module.exports.verifyEmailOTP = async (req, res, next) => {
 module.exports.verifyMobileOTP = async (req, res, next) => {
   const { mobileNumber, otp } = req.body;
 
-  const captain = await captainModel
-    .findOne({ mobileNumber })
-    .select("+mobileOTP");
+  const captain = await captainModel.findOne({ mobileNumber }).select("+mobileOTP");
 
   if (!captain) {
     return res.status(404).json({ message: "Captain not found" });
@@ -109,6 +103,10 @@ module.exports.loginCaptain = async (req, res, next) => {
 
   if (!isMatch) {
     return res.status(401).json({ message: "Invalid email or password" });
+  }
+
+  if (!captain.emailVerified || !captain.mobileVerified) {
+    return res.status(401).json({ message: "Please verify your email and mobile number" });
   }
 
   const token = captain.generateAuthToken();

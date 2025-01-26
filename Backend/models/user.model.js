@@ -1,3 +1,4 @@
+// Backend/models/user.model.js
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -31,7 +32,7 @@ const userSchema = new mongoose.Schema({
   },
   mobileNumber: {
     type: String,
-    required: true, // Ensure this is required
+    required: true, 
   },
   socketId: {
     type: String,
