@@ -55,44 +55,43 @@ const UserSignup = () => {
     setCurrentStep((prev) => prev - 1);
   };
 
-  // Handle form submission
-  const submitHandler = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-  
-    const submitFormData = new FormData();
-    submitFormData.append('fullname[firstname]', formData.firstName);
-    submitFormData.append('fullname[lastname]', formData.lastName);
-    submitFormData.append('email', formData.email);
-    submitFormData.append('password', formData.password);
-    submitFormData.append('mobileNumber', formData.mobileNumber);
-  
-    if (profilePhoto) {
-      submitFormData.append('profilePhoto', profilePhoto);
-    }
-  
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/users/register`,
-        submitFormData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        }
-      );
-  
-      if (response.status === 201) {
-        const { user } = response.data;
-        setUser(user);
-        toast.success('OTP sent to your email and mobile number!');
-        navigate('/verify-email-otp', { state: { email: formData.email, mobileNumber: formData.mobileNumber } });
+const submitHandler = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+
+  const submitFormData = new FormData();
+  submitFormData.append('fullname[firstname]', formData.firstName);
+  submitFormData.append('fullname[lastname]', formData.lastName);
+  submitFormData.append('email', formData.email);
+  submitFormData.append('password', formData.password);
+  submitFormData.append('mobileNumber', formData.mobileNumber);
+
+  if (profilePhoto) {
+    submitFormData.append('profilePhoto', profilePhoto);
+  }
+
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/users/register`,
+      submitFormData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
       }
-    } catch (error) {
-      console.error('Signup failed', error.response?.data || error.message);
-      toast.error(error.response?.data?.message || 'Signup failed. Please try again.');
-    } finally {
-      setIsLoading(false);
+    );
+
+    if (response.status === 201) {
+      const { user } = response.data;
+      setUser(user);
+      toast.success('OTP sent to your email and mobile number!');
+      navigate('/verify-email-otp', { state: { email: formData.email, mobileNumber: formData.mobileNumber } });
     }
-  };
+  } catch (error) {
+    console.error('Signup failed', error.response?.data || error.message);
+    toast.error(error.response?.data?.message || 'Signup failed. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // Render password strength indicator
   const renderPasswordStrengthIndicator = () => {

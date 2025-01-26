@@ -44,8 +44,12 @@ module.exports.registerCaptain = async (req, res, next) => {
   await sendEmailOTP(email, emailOTP);
   await sendSMSOTP(mobileNumber, mobileOTP);
 
-  res.status(201).json({ message: "OTP sent to email and mobile number", captain });
+  res.status(201).json({
+    message: "OTP sent to email and mobile number",
+    captain: { email, mobileNumber },
+  });
 };
+
 
 module.exports.verifyEmailOTP = async (req, res, next) => {
   const { email, otp } = req.body;

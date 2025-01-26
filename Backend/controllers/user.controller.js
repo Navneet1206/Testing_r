@@ -39,7 +39,10 @@ module.exports.registerUser = async (req, res, next) => {
   await sendEmailOTP(email, emailOTP);
   await sendSMSOTP(mobileNumber, mobileOTP);
 
-  res.status(201).json({ message: "OTP sent to email and mobile number", user });
+  res.status(201).json({ 
+    message: "OTP sent to email and mobile number", 
+    user: { email, mobileNumber } 
+  });
 };
 
 module.exports.verifyEmailOTP = async (req, res, next) => {

@@ -1,26 +1,34 @@
+
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const VerifyOTP = ({ type }) => {
+const VerifyOTP = ({ type, email, mobileNumber }) => {
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
-  const { email, mobileNumber } = location.state || {};
+  const { email: locationEmail, mobileNumber: locationMobileNumber } = location.state || {};
+
+  const finalEmail = email || locationEmail;
+  const finalMobileNumber = mobileNumber || locationMobileNumber;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const endpoint = type === 'email' ? 'verify-email-otp' : 'verify-mobile-otp';
       const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/${endpoint}`, {
-        email,
-        mobileNumber,
+        email: finalEmail,
+        mobileNumber: finalMobileNumber,
         otp,
       });
 
       if (response.status === 200) {
-        navigate('/home');
+        if (type === 'email') {
+          navigate('/verify-mobile-otp', { state: { email: finalEmail, mobileNumber: finalMobileNumber } });
+        } else {
+          navigate('/home');
+        }
       }
     } catch (error) {
       setError('Invalid OTP. Please try again.');
