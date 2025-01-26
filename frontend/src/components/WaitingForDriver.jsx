@@ -73,7 +73,7 @@ const WaitingForDriver = (props) => {
             </div>
 
             {/* Ride Details */}
-            <div className="flex gap-2 justify-between flex-col items-center mt-6">
+            {/* <div className="flex gap-2 justify-between flex-col items-center mt-6">
                 <div className="w-full">
                     <div className="flex items-center gap-5 p-3 border-b-2">
                         <i className="ri-map-pin-user-fill text-xl text-purple-600"></i>
@@ -97,7 +97,7 @@ const WaitingForDriver = (props) => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 };

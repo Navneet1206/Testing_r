@@ -1,7 +1,7 @@
 const captainModel = require("../models/captain.model");
 const captainService = require("../services/captain.service");
-const blackListTokenModel = require("../models/blackListToken.model");
 const { validationResult } = require("express-validator");
+const blackListTokenModel = require("../models/blackListToken.model");
 
 module.exports.registerCaptain = async (req, res, next) => {
     const errors = validationResult(req);
@@ -30,8 +30,8 @@ module.exports.registerCaptain = async (req, res, next) => {
       capacity: vehicle.capacity,
       vehicleType: vehicle.vehicleType,
       profilePhoto,
-      mobileNumber, // Ensure mobileNumber is passed here
-      drivingLicense, // Ensure drivingLicense is passed here
+      mobileNumber,
+      drivingLicense,
     });
   
     const token = captain.generateAuthToken();

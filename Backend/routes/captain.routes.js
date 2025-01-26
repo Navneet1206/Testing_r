@@ -4,7 +4,7 @@ const { body } = require("express-validator");
 const captainController = require('../controllers/captain.controller');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
-const authMiddleware = require('../middlewares/auth.middleware'); // Corrected path
+const authMiddleware = require('../middlewares/auth.middleware');
 
 router.post('/register', upload.single('profilePhoto'), [
     body('email').isEmail().withMessage('Invalid Email'),
@@ -19,20 +19,16 @@ router.post('/register', upload.single('profilePhoto'), [
   ],
     captainController.registerCaptain
   );
-  
-
 
 router.post('/login', [
     body('email').isEmail().withMessage('Invalid Email'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
 ],
     captainController.loginCaptain
-)
+);
 
+router.get('/profile', authMiddleware.authCaptain, captainController.getCaptainProfile);
 
-router.get('/profile', authMiddleware.authCaptain, captainController.getCaptainProfile)
-
-router.get('/logout', authMiddleware.authCaptain, captainController.logoutCaptain)
-
+router.get('/logout', authMiddleware.authCaptain, captainController.logoutCaptain);
 
 module.exports = router;

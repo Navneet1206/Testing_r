@@ -1,120 +1,99 @@
-import React, { useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
-import CaptainDetails from '../components/CaptainDetails'
-import RidePopUp from '../components/RidePopUp'
-import { useGSAP } from '@gsap/react'
-import gsap from 'gsap'
-import ConfirmRidePopUp from '../components/ConfirmRidePopUp'
-import { useEffect, useContext } from 'react'
-import { SocketContext } from '../context/SocketContext'
-import { CaptainDataContext } from '../context/CapatainContext'
-import axios from 'axios'
+import React, { useRef, useState, useEffect, useContext } from 'react';
+import { Link } from 'react-router-dom';
+import CaptainDetails from '../components/CaptainDetails';
+import RidePopUp from '../components/RidePopUp';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
+import ConfirmRidePopUp from '../components/ConfirmRidePopUp';
+import { SocketContext } from '../context/SocketContext';
+import { CaptainDataContext } from '../context/CapatainContext';
+import axios from 'axios';
 
 const CaptainHome = () => {
+    const [ridePopupPanel, setRidePopupPanel] = useState(false);
+    const [confirmRidePopupPanel, setConfirmRidePopupPanel] = useState(false);
+    const ridePopupPanelRef = useRef(null);
+    const confirmRidePopupPanelRef = useRef(null);
+    const [ride, setRide] = useState(null);
 
-    const [ ridePopupPanel, setRidePopupPanel ] = useState(false)
-    const [ confirmRidePopupPanel, setConfirmRidePopupPanel ] = useState(false)
-
-    const ridePopupPanelRef = useRef(null)
-    const confirmRidePopupPanelRef = useRef(null)
-    const [ ride, setRide ] = useState(null)
-
-    const { socket } = useContext(SocketContext)
-    const { captain } = useContext(CaptainDataContext)
+    const { socket } = useContext(SocketContext);
+    const { captain, setCaptain } = useContext(CaptainDataContext);
 
     useEffect(() => {
         socket.emit('join', {
-          userId: captain._id,
-          userType: 'captain',
+            userId: captain._id,
+            userType: 'captain',
         });
-      
-        console.log('Captain joined:', captain._id); // Log captain join
-      
+
         const updateLocation = () => {
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position) => {
-              const { latitude, longitude } = position.coords;
-              console.log('Updating captain location:', { latitude, longitude }); // Log location update
-      
-              socket.emit('update-location-captain', {
-                userId: captain._id,
-                location: {
-                  ltd: latitude,
-                  lng: longitude,
-                },
-              });
-            });
-          }
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const { latitude, longitude } = position.coords;
+                    socket.emit('update-location-captain', {
+                        userId: captain._id,
+                        location: {
+                            ltd: latitude,
+                            lng: longitude,
+                        },
+                    });
+                });
+            }
         };
-      
-        const locationInterval = setInterval(updateLocation, 10000); // Update every 10 seconds
-        updateLocation(); // Initial update
-      
-        return () => clearInterval(locationInterval); // Cleanup on unmount
-      }, []);
-      
-      useEffect(() => {
+
+        const locationInterval = setInterval(updateLocation, 10000);
+        updateLocation();
+
+        return () => clearInterval(locationInterval);
+    }, []);
+
+    useEffect(() => {
         socket.on('new-ride', (data) => {
-          console.log('New ride request received:', data); // Log ride request
-          setRide(data);
-          setRidePopupPanel(true);
+            setRide(data);
+            setRidePopupPanel(true);
         });
-      
+
         return () => {
-          socket.off('new-ride'); // Cleanup on unmount
+            socket.off('new-ride');
         };
-      }, []);
+    }, []);
 
-    socket.on('new-ride', (data) => {
-
-        setRide(data)
-        setRidePopupPanel(true)
-
-    })
-
-    async function confirmRide() {
-
+    const confirmRide = async () => {
         const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/confirm`, {
-
             rideId: ride._id,
             captainId: captain._id,
-
-
         }, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-            }
-        })
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        });
 
-        setRidePopupPanel(false)
-        setConfirmRidePopupPanel(true)
+        setRidePopupPanel(false);
+        setConfirmRidePopupPanel(true);
+    };
 
-    }
-
-
-    useGSAP(function () {
+    useGSAP(() => {
         if (ridePopupPanel) {
             gsap.to(ridePopupPanelRef.current, {
-                transform: 'translateY(0)'
-            })
+                transform: 'translateY(0)',
+            });
         } else {
             gsap.to(ridePopupPanelRef.current, {
-                transform: 'translateY(100%)'
-            })
+                transform: 'translateY(100%)',
+            });
         }
-    }, [ ridePopupPanel ])
+    }, [ridePopupPanel]);
 
-    useGSAP(function () {
+    useGSAP(() => {
         if (confirmRidePopupPanel) {
             gsap.to(confirmRidePopupPanelRef.current, {
-                transform: 'translateY(0)'
-            })
+                transform: 'translateY(0)',
+            });
         } else {
             gsap.to(confirmRidePopupPanelRef.current, {
-                transform: 'translateY(100%)'
-            })
+                transform: 'translateY(100%)',
+            });
         }
-    }, [ confirmRidePopupPanel ])
+    }, [confirmRidePopupPanel]);
 
     return (
         <div className='h-screen'>
@@ -126,7 +105,6 @@ const CaptainHome = () => {
             </div>
             <div className='h-3/5'>
                 <img className='h-full w-full object-cover' src="https://miro.medium.com/v2/resize:fit:1400/0*gwMx05pqII5hbfmX.gif" alt="" />
-
             </div>
             <div className='h-2/5 p-6'>
                 <CaptainDetails />
@@ -142,10 +120,12 @@ const CaptainHome = () => {
             <div ref={confirmRidePopupPanelRef} className='fixed w-full h-screen z-10 bottom-0 translate-y-full bg-white px-3 py-10 pt-12'>
                 <ConfirmRidePopUp
                     ride={ride}
-                    setConfirmRidePopupPanel={setConfirmRidePopupPanel} setRidePopupPanel={setRidePopupPanel} />
+                    setConfirmRidePopupPanel={setConfirmRidePopupPanel}
+                    setRidePopupPanel={setRidePopupPanel}
+                />
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default CaptainHome;

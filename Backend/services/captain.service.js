@@ -20,11 +20,11 @@ module.exports.createCaptain = async ({
       vehicleType
     },
     profilePhoto,
-    mobileNumber, // Ensure mobileNumber is passed here
-    drivingLicense, // Ensure drivingLicense is passed here
+    mobileNumber,
+    drivingLicense,
     location: {
       type: 'Point',
-      coordinates: [0, 0] // Default coordinates
+      coordinates: [0, 0]
     }
   });
 

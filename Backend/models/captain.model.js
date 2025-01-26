@@ -62,25 +62,23 @@ const captainSchema = new mongoose.Schema({
   },
   mobileNumber: {
     type: String,
-    required: true, // Ensure this is required
+    required: true,
   },
   drivingLicense: {
     type: String,
-    required: true, // Ensure this is required
+    required: true,
   },
   location: {
     type: {
-      type: String, // GeoJSON type
-      default: 'Point', // Default type for GeoJSON
+      type: String,
+      default: 'Point',
     },
     coordinates: {
-      type: [Number], // [longitude, latitude]
-      // required: true, // Commented out to make it optional
+      type: [Number],
     },
   },
 });
 
-// Create a 2dsphere index on the location field
 captainSchema.index({ location: '2dsphere' });
 
 captainSchema.methods.generateAuthToken = function () {
