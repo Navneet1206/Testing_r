@@ -101,6 +101,10 @@ module.exports.loginUser = async (req, res, next) => {
     return res.status(401).json({ message: "Invalid email or password" });
   }
 
+  if (!user.emailVerified || !user.mobileVerified) {
+    return res.status(401).json({ message: "Please verify your email and mobile number" });
+  }
+
   const token = user.generateAuthToken();
 
   res.cookie("token", token);
