@@ -16,16 +16,20 @@ import Riding from './pages/Riding';
 import CaptainRiding from './pages/CaptainRiding';
 import 'remixicon/fonts/remixicon.css';
 import Navbar from './components/Navbar';
+import VerifyEmailOTP from './pages/VerifyEmailOTP';
+import VerifyMobileOTP from './pages/VerifyMobileOTP';
+
 const App = () => {
   return (
     <div>
-      {/* Conditionally render Navbar on all routes except Start */}
       <Routes>
         <Route path="/" element={<Start />} />
         <Route path="/login" element={<UserLogin />} />
         <Route path="/signup" element={<UserSignup />} />
         <Route path="/captain-login" element={<Captainlogin />} />
         <Route path="/captain-signup" element={<CaptainSignup />} />
+        <Route path="/verify-email-otp" element={<VerifyEmailOTP />} />
+        <Route path="/verify-mobile-otp" element={<VerifyMobileOTP />} />
         <Route
           path="/home"
           element={
@@ -92,7 +96,6 @@ const App = () => {
             </CaptainProtectWrapper>
           }
         />
-
         <Route
           path="/user/history"
           element={
