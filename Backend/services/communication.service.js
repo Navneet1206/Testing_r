@@ -25,7 +25,7 @@ module.exports.sendEmailOTP = async (email, otp) => {
 };
 
 module.exports.sendSMSOTP = async (mobileNumber, otp) => {
-    // Ensure mobileNumber starts with +91
+    // Ensure mobile number starts with +91
     if (!mobileNumber.startsWith('+91')) {
       mobileNumber = `+91${mobileNumber}`;
     }
@@ -35,4 +35,4 @@ module.exports.sendSMSOTP = async (mobileNumber, otp) => {
       from: process.env.TWILIO_PHONE_NUMBER,
       to: mobileNumber,
     });
-  };
+  }; 

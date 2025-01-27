@@ -25,8 +25,11 @@ module.exports.registerCaptain = async (req, res, next) => {
   const emailOTP = generateOTP();
   const mobileOTP = generateOTP();
 
-  // Store mobile number without +91 in the database
-  const storedMobileNumber = mobileNumber.replace('+91', '');
+  // Ensure mobile number starts with +91
+  let formattedMobileNumber = mobileNumber.trim();
+  if (!formattedMobileNumber.startsWith('+91')) {
+    formattedMobileNumber = `+91${formattedMobileNumber}`;
+  }
 
   const captain = await captainService.createCaptain({
     firstname: fullname.firstname,
@@ -38,23 +41,26 @@ module.exports.registerCaptain = async (req, res, next) => {
     capacity: vehicle.capacity,
     vehicleType: vehicle.vehicleType,
     profilePhoto,
-    mobileNumber: storedMobileNumber, // Store without +91
+    mobileNumber: formattedMobileNumber, // Use formatted mobile number
     drivingLicense,
     emailOTP,
     mobileOTP,
   });
 
   await sendEmailOTP(email, emailOTP);
-  await sendSMSOTP(mobileNumber, mobileOTP); // Send with +91
+  await sendSMSOTP(formattedMobileNumber, mobileOTP); // Send OTP to formatted mobile number
 
   res.status(201).json({
     message: "OTP sent to email and mobile number",
-    captain: { email, mobileNumber: storedMobileNumber },
+    captain: { email, mobileNumber: formattedMobileNumber },
   });
 };
 
 module.exports.verifyEmailOTP = async (req, res, next) => {
   const { email, otp } = req.body;
+
+  // Trim and normalize OTP
+  const normalizedOTP = otp.trim();
 
   const captain = await captainModel.findOne({ email }).select("+emailOTP");
 
@@ -62,7 +68,13 @@ module.exports.verifyEmailOTP = async (req, res, next) => {
     return res.status(404).json({ message: "Captain not found" });
   }
 
-  if (captain.emailOTP !== otp) {
+  // Trim and normalize stored OTP
+  const storedOTP = captain.emailOTP.trim();
+
+  // Debugging: Log the OTPs
+  console.log(`Stored OTP: ${storedOTP}, Entered OTP: ${normalizedOTP}`);
+
+  if (storedOTP !== normalizedOTP) {
     return res.status(400).json({ message: "Invalid OTP" });
   }
 
@@ -75,13 +87,22 @@ module.exports.verifyEmailOTP = async (req, res, next) => {
 module.exports.verifyMobileOTP = async (req, res, next) => {
   const { mobileNumber, otp } = req.body;
 
+  // Trim and normalize OTP
+  const normalizedOTP = otp.trim();
+
   const captain = await captainModel.findOne({ mobileNumber }).select("+mobileOTP");
 
   if (!captain) {
     return res.status(404).json({ message: "Captain not found" });
   }
 
-  if (captain.mobileOTP !== otp) {
+  // Trim and normalize stored OTP
+  const storedOTP = captain.mobileOTP.trim();
+
+  // Debugging: Log the OTPs
+  console.log(`Stored OTP: ${storedOTP}, Entered OTP: ${normalizedOTP}`);
+
+  if (storedOTP !== normalizedOTP) {
     return res.status(400).json({ message: "Invalid OTP" });
   }
 
@@ -90,6 +111,8 @@ module.exports.verifyMobileOTP = async (req, res, next) => {
 
   res.status(200).json({ message: "Mobile number verified successfully" });
 };
+
+
 
 
 module.exports.loginCaptain = async (req, res, next) => {
