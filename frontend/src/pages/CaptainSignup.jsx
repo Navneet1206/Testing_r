@@ -121,7 +121,7 @@ const CaptainSignup = () => {
       if (response.status === 201) {
         toast.success('OTP sent to your email and mobile number!');
         navigate('/verify-email-otp', {
-          state: { email: formData.email, mobileNumber: formData.mobileNumber },
+          state: { email: formData.email, mobileNumber: formData.mobileNumber, userType: 'captain' },
         });
       }
     } catch (error) {

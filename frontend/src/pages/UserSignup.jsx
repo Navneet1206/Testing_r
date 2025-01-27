@@ -88,8 +88,8 @@ const UserSignup = () => {
   
       if (response.status === 201) {
         toast.success("OTP sent to your email and mobile number!");
-        navigate("/verify-email-otp", {
-          state: { email: formData.email, mobileNumber: formData.mobileNumber },
+        navigate('/verify-email-otp', {
+          state: { email: formData.email, mobileNumber: formData.mobileNumber, userType: 'user' },
         });
       }
     } catch (error) {

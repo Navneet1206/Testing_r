@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const VerifyOTP = ({ type, email, mobileNumber }) => {
+const VerifyOTP = ({ type, email, mobileNumber, userType }) => {
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -16,7 +16,8 @@ const VerifyOTP = ({ type, email, mobileNumber }) => {
     e.preventDefault();
     try {
       const endpoint = type === 'email' ? 'verify-email-otp' : 'verify-mobile-otp';
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/${endpoint}`, {
+      const baseUrl = userType === 'captain' ? '/captains' : '/users';
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}${baseUrl}/${endpoint}`, {
         email: finalEmail,
         mobileNumber: finalMobileNumber,
         otp,
@@ -24,9 +25,9 @@ const VerifyOTP = ({ type, email, mobileNumber }) => {
 
       if (response.status === 200) {
         if (type === 'email') {
-          navigate('/verify-mobile-otp', { state: { email: finalEmail, mobileNumber: finalMobileNumber } });
+          navigate('/verify-mobile-otp', { state: { email: finalEmail, mobileNumber: finalMobileNumber, userType } });
         } else {
-          navigate('/captain-home');
+          navigate(userType === 'captain' ? '/captain-home' : '/home');
         }
       }
     } catch (error) {
