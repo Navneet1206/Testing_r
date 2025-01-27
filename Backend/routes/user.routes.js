@@ -4,6 +4,7 @@ const { body } = require("express-validator");
 const userController = require("../controllers/user.controller");
 const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
+const authMiddleware = require("../middlewares/auth.middleware");
 
 router.post(
   "/register",
@@ -52,7 +53,8 @@ router.post(
   userController.loginUser
 );
 
-router.get("/profile", userController.getUserProfile);
+
+router.get("/profile", authMiddleware.authUser, userController.getUserProfile);
 
 router.get("/logout", userController.logoutUser);
 
