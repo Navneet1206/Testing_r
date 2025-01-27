@@ -21,12 +21,6 @@ module.exports.registerUser = async (req, res, next) => {
     mobileNumber,
   });
 
-  const isUserAlready = await userModel.findOne({ email });
-
-  if (isUserAlready) {
-    return res.status(400).json({ message: "User already exists" });
-  }
-
   const hashedPassword = await userModel.hashPassword(password);
 
   const emailOTP = generateOTP();
@@ -36,31 +30,44 @@ module.exports.registerUser = async (req, res, next) => {
   console.log("Generated EMAIL OTP:", emailOTP);
 
   let formattedMobileNumber = mobileNumber.trim();
-  if (!formattedMobileNumber.startsWith('+91')) {
+  if (!formattedMobileNumber.startsWith("+91")) {
     formattedMobileNumber = `+91${formattedMobileNumber}`;
   }
 
-  const user = await userService.createUser({
-    firstname: fullname.firstname,
-    lastname: fullname.lastname,
-    email,
-    password: hashedPassword,
-    profilePhoto,
-    mobileNumber: formattedMobileNumber,
-    emailOTP,
-    mobileOTP,
-  });
+  try {
+    const user = await userService.createUser({
+      firstname: fullname.firstname,
+      lastname: fullname.lastname,
+      email,
+      password: hashedPassword,
+      profilePhoto,
+      mobileNumber: formattedMobileNumber,
+      emailOTP,
+      mobileOTP,
+    });
 
-  await sendEmailOTP(email, emailOTP);
-  await sendSMSOTP(formattedMobileNumber, mobileOTP);
+    await sendEmailOTP(email, emailOTP);
+    await sendSMSOTP(formattedMobileNumber, mobileOTP);
 
-  console.log("OTP sent to email and mobile number");
+    console.log("OTP sent to email and mobile number");
 
-  res.status(201).json({
-    message: "OTP sent to email and mobile number",
-    user: { email, mobileNumber: formattedMobileNumber },
-  });
+    res.status(201).json({
+      message: "OTP sent to email and mobile number",
+      user: { email, mobileNumber: formattedMobileNumber },
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      console.log("Duplicate key error:", error);
+      let field = Object.keys(error.keyPattern)[0]; // Identify which field caused the error
+      return res.status(400).json({
+        message: `Duplicate value found for ${field}. Please use a different ${field}.`,
+      });
+    }
+    console.error("Error during registration:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
+
 
 module.exports.verifyEmailOTP = async (req, res, next) => {
   const { email, otp } = req.body;

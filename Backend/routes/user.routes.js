@@ -2,13 +2,12 @@ const express = require("express");
 const router = express.Router();
 const { body } = require("express-validator");
 const userController = require("../controllers/user.controller");
-const multer = require("multer");
-const upload = multer({ dest: "uploads/" });
+const upload = require("../utils/multer.config"); // Use the custom multer config
 const authMiddleware = require("../middlewares/auth.middleware");
 
 router.post(
   "/register",
-  upload.single("profilePhoto"),
+  upload.single("profilePhoto"), // Use the custom file validation
   [
     body("email").isEmail().withMessage("Invalid Email"),
     body("fullname.firstname")
@@ -52,7 +51,6 @@ router.post(
   ],
   userController.loginUser
 );
-
 
 router.get("/profile", authMiddleware.authUser, userController.getUserProfile);
 

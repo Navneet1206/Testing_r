@@ -2,13 +2,12 @@ const express = require("express");
 const router = express.Router();
 const { body } = require("express-validator");
 const captainController = require("../controllers/captain.controller");
-const multer = require("multer");
-const upload = multer({ dest: "uploads/" });
+const upload = require("../utils/multer.config"); // Use the custom multer config
 const authMiddleware = require("../middlewares/auth.middleware");
 
 router.post(
   "/register",
-  upload.single("profilePhoto"),
+  upload.single("profilePhoto"), // Use the custom file validation
   [
     body("email").isEmail().withMessage("Invalid Email"),
     body("fullname.firstname")
@@ -70,16 +69,8 @@ router.post(
   captainController.loginCaptain
 );
 
-router.get(
-  "/profile",
-  authMiddleware.authCaptain,
-  captainController.getCaptainProfile
-);
+router.get("/profile", authMiddleware.authCaptain, captainController.getCaptainProfile);
 
-router.get(
-  "/logout",
-  authMiddleware.authCaptain,
-  captainController.logoutCaptain
-);
+router.get("/logout", authMiddleware.authCaptain, captainController.logoutCaptain);
 
 module.exports = router;

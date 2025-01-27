@@ -14,47 +14,53 @@ module.exports.registerCaptain = async (req, res, next) => {
   const { fullname, email, password, vehicle, mobileNumber, drivingLicense } = req.body;
   const profilePhoto = req.file ? req.file.path : "";
 
-  const isCaptainAlreadyExist = await captainModel.findOne({ email });
-
-  if (isCaptainAlreadyExist) {
-    return res.status(400).json({ message: "Captain already exists" });
-  }
-
   const hashedPassword = await captainModel.hashPassword(password);
 
   const emailOTP = generateOTP();
   const mobileOTP = generateOTP();
 
-  // Ensure mobile number starts with +91
   let formattedMobileNumber = mobileNumber.trim();
-  if (!formattedMobileNumber.startsWith('+91')) {
+  if (!formattedMobileNumber.startsWith("+91")) {
     formattedMobileNumber = `+91${formattedMobileNumber}`;
   }
 
-  const captain = await captainService.createCaptain({
-    firstname: fullname.firstname,
-    lastname: fullname.lastname,
-    email,
-    password: hashedPassword,
-    color: vehicle.color,
-    plate: vehicle.plate,
-    capacity: vehicle.capacity,
-    vehicleType: vehicle.vehicleType,
-    profilePhoto,
-    mobileNumber: formattedMobileNumber, // Use formatted mobile number
-    drivingLicense,
-    emailOTP,
-    mobileOTP,
-  });
+  try {
+    const captain = await captainService.createCaptain({
+      firstname: fullname.firstname,
+      lastname: fullname.lastname,
+      email,
+      password: hashedPassword,
+      color: vehicle.color,
+      plate: vehicle.plate,
+      capacity: vehicle.capacity,
+      vehicleType: vehicle.vehicleType,
+      profilePhoto,
+      mobileNumber: formattedMobileNumber,
+      drivingLicense,
+      emailOTP,
+      mobileOTP,
+    });
 
-  await sendEmailOTP(email, emailOTP);
-  await sendSMSOTP(formattedMobileNumber, mobileOTP); // Send OTP to formatted mobile number
+    await sendEmailOTP(email, emailOTP);
+    await sendSMSOTP(formattedMobileNumber, mobileOTP);
 
-  res.status(201).json({
-    message: "OTP sent to email and mobile number",
-    captain: { email, mobileNumber: formattedMobileNumber },
-  });
+    res.status(201).json({
+      message: "OTP sent to email and mobile number",
+      captain: { email, mobileNumber: formattedMobileNumber },
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      console.log("Duplicate key error:", error);
+      let field = Object.keys(error.keyValue)[0];
+      return res.status(400).json({
+        message: `Duplicate value found for ${field}. Please use a different ${field}.`,
+      });
+    }
+    console.error("Error during registration:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
+
 
 module.exports.verifyEmailOTP = async (req, res, next) => {
   const { email, otp } = req.body;
