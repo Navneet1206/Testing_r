@@ -70,9 +70,8 @@ const CaptainSignup = () => {
         {[...Array(5)].map((_, index) => (
           <div
             key={index}
-            className={`h-1 w-full rounded ${
-              index < passwordStrength ? colors[index] : 'bg-gray-200'
-            }`}
+            className={`h-1 w-full rounded ${index < passwordStrength ? colors[index] : 'bg-gray-200'
+              }`}
           />
         ))}
       </div>
@@ -92,7 +91,7 @@ const CaptainSignup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-  
+
     const submitFormData = new FormData();
     submitFormData.append('fullname[firstname]', formData.firstName);
     submitFormData.append('fullname[lastname]', formData.lastName);
@@ -104,11 +103,11 @@ const CaptainSignup = () => {
     submitFormData.append('vehicle[plate]', formData.vehicle.plate);
     submitFormData.append('vehicle[capacity]', formData.vehicle.capacity);
     submitFormData.append('vehicle[vehicleType]', formData.vehicle.type);
-  
+
     if (profilePhoto) {
       submitFormData.append('profilePhoto', profilePhoto);
     }
-  
+
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/captains/register`,
@@ -117,7 +116,7 @@ const CaptainSignup = () => {
           headers: { 'Content-Type': 'multipart/form-data' },
         }
       );
-  
+
       if (response.status === 201) {
         toast.success('OTP sent to your email and mobile number!');
         navigate('/verify-email-otp', {
@@ -194,15 +193,18 @@ const CaptainSignup = () => {
       case 2:
         return (
           <div className="space-y-6">
-            <input
-              required
-              name="mobileNumber"
-              type="tel"
-              placeholder="Mobile Number"
-              value={formData.mobileNumber}
-              onChange={(e) => updateFormData(e)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-300"
-            />
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-500">+91</span>
+              <input
+                required
+                name="mobileNumber"
+                type="tel"
+                placeholder="Mobile Number"
+                value={formData.mobileNumber}
+                onChange={(e) => updateFormData(e)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-300"
+              />
+            </div>
             <input
               required
               name="drivingLicense"
@@ -320,9 +322,8 @@ const CaptainSignup = () => {
             {[1, 2, 3].map((step) => (
               <div
                 key={step}
-                className={`w-8 h-1 mx-1 rounded-full ${
-                  currentStep === step ? 'bg-blue-500' : 'bg-gray-300'
-                }`}
+                className={`w-8 h-1 mx-1 rounded-full ${currentStep === step ? 'bg-blue-500' : 'bg-gray-300'
+                  }`}
               />
             ))}
           </div>

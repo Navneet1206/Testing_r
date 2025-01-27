@@ -58,18 +58,18 @@ const UserSignup = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-  
+
     const submitFormData = new FormData();
     submitFormData.append("fullname[firstname]", formData.firstName);
     submitFormData.append("fullname[lastname]", formData.lastName);
     submitFormData.append("email", formData.email);
     submitFormData.append("password", formData.password);
     submitFormData.append("mobileNumber", formData.mobileNumber);
-  
+
     if (profilePhoto) {
       submitFormData.append("profilePhoto", profilePhoto);
     }
-  
+
     try {
       console.log("Submitting form data:", {
         firstName: formData.firstName,
@@ -77,7 +77,7 @@ const UserSignup = () => {
         email: formData.email,
         mobileNumber: formData.mobileNumber,
       });
-  
+
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/users/register`,
         submitFormData,
@@ -85,7 +85,7 @@ const UserSignup = () => {
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-  
+
       if (response.status === 201) {
         toast.success("OTP sent to your email and mobile number!");
         navigate('/verify-email-otp', {
@@ -108,9 +108,8 @@ const UserSignup = () => {
         {[...Array(5)].map((_, index) => (
           <div
             key={index}
-            className={`h-1 w-full rounded ${
-              index < passwordStrength ? colors[index] : 'bg-gray-200'
-            }`}
+            className={`h-1 w-full rounded ${index < passwordStrength ? colors[index] : 'bg-gray-200'
+              }`}
           />
         ))}
       </div>
@@ -180,15 +179,20 @@ const UserSignup = () => {
       case 2:
         return (
           <div className="space-y-6">
-            <input
-              required
-              name="mobileNumber"
-              type="tel"
-              placeholder="Mobile Number"
-              value={formData.mobileNumber}
-              onChange={updateFormData}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-300"
-            />
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-500">+91</span>
+              <input
+                required
+                name="mobileNumber"
+                type="tel"
+                placeholder="Mobile Number"
+                value={formData.mobileNumber}
+                onChange={updateFormData}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-300"
+              />
+            </div>
+
+
             <input
               type="file"
               onChange={(e) => setProfilePhoto(e.target.files[0])}
@@ -232,9 +236,8 @@ const UserSignup = () => {
             {[1, 2].map((step) => (
               <div
                 key={step}
-                className={`w-8 h-1 mx-1 rounded-full ${
-                  currentStep === step ? 'bg-blue-500' : 'bg-gray-300'
-                }`}
+                className={`w-8 h-1 mx-1 rounded-full ${currentStep === step ? 'bg-blue-500' : 'bg-gray-300'
+                  }`}
               />
             ))}
           </div>
