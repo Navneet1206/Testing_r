@@ -74,9 +74,9 @@ module.exports.verifyEmailOTP = async (req, res, next) => {
   // Debugging: Log the OTPs
   console.log(`Stored OTP: ${storedOTP}, Entered OTP: ${normalizedOTP}`);
 
-  if (storedOTP !== normalizedOTP) {
+  if (String(storedOTP).trim() !== String(normalizedOTP).trim()) {
     return res.status(400).json({ message: "Invalid OTP" });
-  }
+}
 
   captain.emailVerified = true;
   await captain.save();
@@ -102,9 +102,10 @@ module.exports.verifyMobileOTP = async (req, res, next) => {
   // Debugging: Log the OTPs
   console.log(`Stored OTP: ${storedOTP}, Entered OTP: ${normalizedOTP}`);
 
-  if (storedOTP !== normalizedOTP) {
+  if (String(storedOTP).trim() !== String(normalizedOTP).trim()) {
     return res.status(400).json({ message: "Invalid OTP" });
-  }
+}
+
 
   captain.mobileVerified = true;
   await captain.save();

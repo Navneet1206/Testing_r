@@ -1,7 +1,6 @@
 const crypto = require('crypto');
 
-function generateOTP(length = 6) {
-    return crypto.randomInt(Math.pow(10, length - 1), Math.pow(10, length)).toString();
-}
-
-module.exports = { generateOTP };
+module.exports.generateOTP = (length = 6) => {
+    const otp = crypto.randomInt(10 ** (length - 1), 10 ** length).toString();
+    return otp.padStart(length, '0'); 
+};

@@ -33,6 +33,10 @@ module.exports.registerUser = async (req, res, next) => {
   const emailOTP = generateOTP();
   const mobileOTP = generateOTP();
 
+
+console.log("Generated Mobile OTP:", mobileOTP);
+console.log("Generated EMAIL OTP:", emailOTP);
+
   // Ensure mobile number starts with +91
   let formattedMobileNumber = mobileNumber.trim();
   if (!formattedMobileNumber.startsWith('+91')) {
@@ -78,9 +82,10 @@ module.exports.verifyEmailOTP = async (req, res, next) => {
   // Debugging: Log the OTPs
   console.log(`Stored OTP: ${storedOTP}, Entered OTP: ${normalizedOTP}`);
 
-  if (storedOTP !== normalizedOTP) {
+  if (String(storedOTP).trim() !== String(normalizedOTP).trim()) {
+    console.log(`Email: ${email}, Entered OTP: ${normalizedOTP}, Stored OTP: ${storedOTP}`);
     return res.status(400).json({ message: "Invalid OTP" });
-  }
+}
 
   user.emailVerified = true;
   await user.save();
@@ -89,32 +94,57 @@ module.exports.verifyEmailOTP = async (req, res, next) => {
 };
 
 module.exports.verifyMobileOTP = async (req, res, next) => {
-  const { mobileNumber, otp } = req.body;
+  let { mobileNumber, otp } = req.body;
 
-  // Trim and normalize OTP
-  const normalizedOTP = otp.trim();
+  // Debugging: Log incoming request data
+  console.log("Incoming Mobile OTP Verification Request:");
+  console.log("Mobile Number:", mobileNumber);
+  console.log("Entered OTP:", otp);
 
-  const user = await userModel.findOne({ mobileNumber }).select("+mobileOTP");
-
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
+  // Check if both mobileNumber and OTP are provided
+  if (!mobileNumber || !otp) {
+    console.log("Mobile number or OTP missing in request.");
+    return res.status(400).json({ message: "Mobile number and OTP are required" });
   }
 
-  // Trim and normalize stored OTP
-  const storedOTP = user.mobileOTP.trim();
-
-  // Debugging: Log the OTPs
-  console.log(`Stored OTP: ${storedOTP}, Entered OTP: ${normalizedOTP}`);
-
-  if (storedOTP !== normalizedOTP) {
-    return res.status(400).json({ message: "Invalid OTP" });
+  // Normalize mobile number to include country code (+91 for India)
+  if (!mobileNumber.startsWith("+91")) {
+    mobileNumber = `+91${mobileNumber.trim()}`;
   }
 
-  user.mobileVerified = true;
-  await user.save();
+  // Debugging: Log normalized mobile number
+  console.log("Normalized Mobile Number for Query:", mobileNumber);
 
-  res.status(200).json({ message: "Mobile number verified successfully" });
+  try {
+    // Find the user by the normalized mobile number
+    const user = await userModel.findOne({ mobileNumber }).select("+mobileOTP");
+    if (!user) {
+      console.log("User not found for mobile number:", mobileNumber);
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Debugging: Log stored OTP
+    console.log("Stored OTP in DB:", user.mobileOTP);
+
+    // Validate OTP
+    if (String(user.mobileOTP).trim() !== String(otp).trim()) {
+      console.log(`OTP mismatch: Expected ${user.mobileOTP}, Received ${otp}`);
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    // Mark the mobile number as verified
+    user.mobileVerified = true;
+    await user.save();
+
+    console.log("Mobile number verified successfully for:", mobileNumber);
+    return res.status(200).json({ message: "Mobile number verified successfully" });
+  } catch (error) {
+    // Debugging: Log any unexpected errors
+    console.error("Error during mobile OTP verification:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
+
 
 module.exports.loginUser = async (req, res, next) => {
   const errors = validationResult(req);

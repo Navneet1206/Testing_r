@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const VerifyOTP = ({ type, email, mobileNumber, userType }) => {
-  const [otp, setOtp] = useState('');
-  const [error, setError] = useState('');
+  const [otp, setOtp] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const { email: locationEmail, mobileNumber: locationMobileNumber } = location.state || {};
@@ -15,8 +15,8 @@ const VerifyOTP = ({ type, email, mobileNumber, userType }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const endpoint = type === 'email' ? 'verify-email-otp' : 'verify-mobile-otp';
-      const baseUrl = userType === 'captain' ? '/captains' : '/users';
+      const endpoint = type === "email" ? "verify-email-otp" : "verify-mobile-otp";
+      const baseUrl = userType === "captain" ? "/captains" : "/users";
       const response = await axios.post(`${import.meta.env.VITE_BASE_URL}${baseUrl}/${endpoint}`, {
         email: finalEmail,
         mobileNumber: finalMobileNumber,
@@ -24,14 +24,15 @@ const VerifyOTP = ({ type, email, mobileNumber, userType }) => {
       });
 
       if (response.status === 200) {
-        if (type === 'email') {
-          navigate('/verify-mobile-otp', { state: { email: finalEmail, mobileNumber: finalMobileNumber, userType } });
+        if (type === "email") {
+          navigate("/verify-mobile-otp", { state: { email: finalEmail, mobileNumber: finalMobileNumber, userType } });
         } else {
-          navigate(userType === 'captain' ? '/captain-home' : '/home');
+          navigate(userType === "captain" ? "/captain-home" : "/home");
         }
       }
     } catch (error) {
-      setError('Invalid OTP. Please try again.');
+      console.error(error); // Log the error for debugging
+      setError("Invalid OTP. Please try again.");
     }
   };
 
@@ -40,7 +41,7 @@ const VerifyOTP = ({ type, email, mobileNumber, userType }) => {
       <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Verify OTP</h2>
         <p className="text-sm text-gray-600 mb-4">
-          {type === 'email'
+          {type === "email"
             ? `Please enter the OTP sent to your email (${finalEmail}).`
             : `Please enter the OTP sent to your mobile number (${finalMobileNumber}).`}
         </p>
@@ -52,7 +53,7 @@ const VerifyOTP = ({ type, email, mobileNumber, userType }) => {
               type="text"
               placeholder="Enter OTP"
               value={otp}
-              onChange={(e) => setOtp(e.target.value)}
+              onChange={(e) => setOtp(e.target.value.trim())}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-300"
             />
           </div>
