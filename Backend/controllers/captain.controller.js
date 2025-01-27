@@ -4,6 +4,7 @@ const { validationResult } = require("express-validator");
 const blackListTokenModel = require("../models/blackListToken.model");
 const { generateOTP } = require("../utils/otp.utils");
 const { sendEmailOTP, sendSMSOTP } = require("../services/communication.service");
+const rideModel = require("../models/ride.model");
 
 module.exports.registerCaptain = async (req, res, next) => {
   const errors = validationResult(req);
@@ -189,4 +190,32 @@ module.exports.logoutCaptain = async (req, res, next) => {
   res.clearCookie("token");
 
   res.status(200).json({ message: "Logout successfully" });
+};
+
+module.exports.getCaptainDashboard = async (req, res) => {
+  try {
+    const { captainId } = req.params;
+
+    // Fetch captain details
+    const captain = await captainModel.findById(captainId);
+
+    if (!captain) {
+      return res.status(404).json({ message: "Captain not found" });
+    }
+
+    // Fetch total earnings and rides data
+    const rides = await rideModel.find({ captain: captainId });
+    const totalEarnings = rides.reduce((sum, ride) => sum + ride.fare, 0);
+
+    res.status(200).json({
+      fullname: captain.fullname,
+      profilePhoto: captain.profilePhoto,
+      totalEarnings,
+      ridesCompleted: rides.length,
+      location: captain.location,
+    });
+  } catch (error) {
+    console.error("Error fetching captain dashboard data:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };

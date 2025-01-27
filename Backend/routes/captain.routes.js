@@ -5,6 +5,7 @@ const captainController = require("../controllers/captain.controller");
 const upload = require("../utils/multer.config"); // Use the custom multer config
 const authMiddleware = require("../middlewares/auth.middleware");
 
+
 router.post(
   "/register",
   upload.single("profilePhoto"), // Use the custom file validation
@@ -73,4 +74,5 @@ router.get("/profile", authMiddleware.authCaptain, captainController.getCaptainP
 
 router.get("/logout", authMiddleware.authCaptain, captainController.logoutCaptain);
 
+router.get("/dashboard/:captainId", captainController.getCaptainDashboard);
 module.exports = router;
