@@ -39,30 +39,37 @@ module.exports.authUser = async (req, res, next) => {
 }
 
 module.exports.authCaptain = async (req, res, next) => {
-    const token = req.cookies.token || req.headers.authorization?.split(' ')[ 1 ];
-
-
+    const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+  
     if (!token) {
-        return res.status(401).json({ message: 'Unauthorized' });
+      console.log('No token provided');
+      return res.status(401).json({ message: 'Unauthorized: No token provided' });
     }
-
-    const isBlacklisted = await blackListTokenModel.findOne({ token: token });
-
-
-
+  
+    const isBlacklisted = await blackListTokenModel.findOne({ token });
     if (isBlacklisted) {
-        return res.status(401).json({ message: 'Unauthorized' });
+      console.log('Token is blacklisted');
+      return res.status(401).json({ message: 'Unauthorized: Token is blacklisted' });
     }
-
+  
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const captain = await captainModel.findById(decoded._id)
-        req.captain = captain;
-
-        return next()
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log('Decoded token:', decoded); // Log decoded token for debugging
+  
+      const captain = await captainModel.findById(decoded._id);
+      console.log('Fetched captain:', captain); // Log fetched captain
+  
+      if (!captain) {
+        console.log('Captain not found in the database');
+        return res.status(404).json({ message: 'Captain not found' });
+      }
+  
+      req.captain = captain; // Attach captain to request object
+      next();
     } catch (err) {
-        console.log(err);
-
-        res.status(401).json({ message: 'Unauthorized' });
+      console.error('Error in authCaptain middleware:', err);
+      return res.status(401).json({ message: 'Unauthorized: Invalid token' });
     }
-}
+  };
+  
+  

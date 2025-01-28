@@ -62,7 +62,6 @@ module.exports.registerCaptain = async (req, res, next) => {
   }
 };
 
-
 module.exports.verifyEmailOTP = async (req, res, next) => {
   const { email, otp } = req.body;
 
@@ -143,10 +142,6 @@ module.exports.verifyMobileOTP = async (req, res, next) => {
   }
 };
 
-
-
-
-
 module.exports.loginCaptain = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -179,6 +174,12 @@ module.exports.loginCaptain = async (req, res, next) => {
 };
 
 module.exports.getCaptainProfile = async (req, res, next) => {
+  if (!req.captain) {
+    console.log('No captain found in request');
+    return res.status(404).json({ message: 'Captain not found' });
+  }
+
+  console.log('Returning captain profile:', req.captain);
   res.status(200).json({ captain: req.captain });
 };
 
@@ -189,7 +190,7 @@ module.exports.logoutCaptain = async (req, res, next) => {
 
   res.clearCookie("token");
 
-  res.status(200).json({ message: "Logout successfully" });
+res.status(200).json({ message: "Logout successfully" });
 };
 
 // module.exports.getCaptainDashboard = async (req, res) => {

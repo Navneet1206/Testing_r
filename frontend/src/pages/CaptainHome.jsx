@@ -17,7 +17,7 @@ const CaptainHome = () => {
     const [ride, setRide] = useState(null);
 
     const { socket } = useContext(SocketContext);
-    const { captain, setCaptain } = useContext(CaptainDataContext);
+    const { captain, isLoading, error } = useContext(CaptainDataContext);
 
     useEffect(() => {
         socket.emit('join', {
@@ -94,9 +94,21 @@ const CaptainHome = () => {
             });
         }
     }, [confirmRidePopupPanel]);
-
+    if (isLoading) {
+        return <div>Loading captain data...</div>;
+      }
+    
+      if (error) {
+        return <div>Error: {error}</div>;
+      }
+    
+      if (!captain) {
+        return <div>No captain data found. Please log in again.</div>;
+      }
     return (
         <div className='h-screen'>
+                  <h1>Welcome, {captain.fullname.firstname}!</h1>
+                  <p>Email: {captain.email}</p>
             <div className='fixed p-6 top-0 flex items-center justify-between w-screen'>
                 <img className='w-16' src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png" alt="" />
                 <Link to='/captain-home' className=' h-10 w-10 bg-white flex items-center justify-center rounded-full'>
