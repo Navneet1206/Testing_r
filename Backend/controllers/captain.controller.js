@@ -192,30 +192,30 @@ module.exports.logoutCaptain = async (req, res, next) => {
   res.status(200).json({ message: "Logout successfully" });
 };
 
-module.exports.getCaptainDashboard = async (req, res) => {
-  try {
-    const { captainId } = req.params;
+// module.exports.getCaptainDashboard = async (req, res) => {
+//   try {
+//     const { captainId } = req.params;
 
-    // Fetch captain details
-    const captain = await captainModel.findById(captainId);
+//     // Fetch captain details
+//     const captain = await captainModel.findById(captainId);
 
-    if (!captain) {
-      return res.status(404).json({ message: "Captain not found" });
-    }
+//     if (!captain) {
+//       return res.status(404).json({ message: "Captain not found" });
+//     }
 
-    // Fetch total earnings and rides data
-    const rides = await rideModel.find({ captain: captainId });
-    const totalEarnings = rides.reduce((sum, ride) => sum + ride.fare, 0);
+//     // Fetch total earnings and rides data
+//     const rides = await rideModel.find({ captain: captainId });
+//     const totalEarnings = rides.reduce((sum, ride) => sum + ride.fare, 0);
 
-    res.status(200).json({
-      fullname: captain.fullname,
-      profilePhoto: captain.profilePhoto,
-      totalEarnings,
-      ridesCompleted: rides.length,
-      location: captain.location,
-    });
-  } catch (error) {
-    console.error("Error fetching captain dashboard data:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
+//     res.status(200).json({
+//       fullname: captain.fullname,
+//       profilePhoto: captain.profilePhoto,
+//       totalEarnings,
+//       ridesCompleted: rides.length,
+//       location: captain.location,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching captain dashboard data:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// };

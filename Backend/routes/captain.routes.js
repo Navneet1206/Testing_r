@@ -74,5 +74,5 @@ router.get("/profile", authMiddleware.authCaptain, captainController.getCaptainP
 
 router.get("/logout", authMiddleware.authCaptain, captainController.logoutCaptain);
 
-router.get("/dashboard/:captainId", captainController.getCaptainDashboard);
+// router.get("/dashboard/:captainId", captainController.getCaptainDashboard);
 module.exports = router;
