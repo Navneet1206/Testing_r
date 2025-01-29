@@ -75,6 +75,44 @@ const sendMessageToSocketId = (socketId, messageObject) => {
     } else {
         console.log('Socket.io not initialized.');
     }
+
+    
+    // Add these events to the existing socket.io connection
+socket.on('start-ride', async (data) => {
+    try {
+      const { rideId } = data;
+      const ride = await rideModel.findById(rideId)
+        .populate('user captain')
+        .lean();
+      
+      // Get coordinates for the route
+      const pickupCoords = await mapService.getAddressCoordinate(ride.pickup);
+      const destCoords = await mapService.getAddressCoordinate(ride.destination);
+  
+      // Emit route data to both parties
+      io.to(ride.user.socketId).emit('ride-route', {
+        pickup: pickupCoords,
+        destination: destCoords
+      });
+      
+      io.to(ride.captain.socketId).emit('ride-route', {
+        pickup: pickupCoords,
+        destination: destCoords
+      });
+  
+    } catch (error) {
+      console.error('Error handling ride start:', error);
+    }
+  });
+  
+  socket.on('end-ride', async (data) => {
+    const { rideId } = data;
+    const ride = await rideModel.findById(rideId)
+      .populate('user captain');
+    
+    // Emit ride completion
+    io.to(ride.captain.socketId).emit('ride-completed', ride);
+  });
 };
 
 module.exports = { initializeSocket, sendMessageToSocketId };
