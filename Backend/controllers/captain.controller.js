@@ -184,14 +184,17 @@ module.exports.getCaptainProfile = async (req, res, next) => {
 };
 
 module.exports.logoutCaptain = async (req, res, next) => {
+  res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "None" });
+
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+  if (token) {
+      await blackListTokenModel.create({ token });
+  }
 
-  await blackListTokenModel.create({ token });
-
-  res.clearCookie("token");
-
-res.status(200).json({ message: "Logout successfully" });
+  console.log("Captain logged out successfully");
+  return res.status(200).json({ message: "Logged out" });
 };
+
 
 // module.exports.getCaptainDashboard = async (req, res) => {
 //   try {

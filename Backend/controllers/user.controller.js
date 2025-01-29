@@ -190,14 +190,15 @@ module.exports.getUserProfile = async (req, res, next) => {
   }
 };
 
-
 module.exports.logoutUser = async (req, res, next) => {
-  res.clearCookie("token");
-  const token = req.cookies.token || req.headers.authorization.split(" ")[1];
+  res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "None" });
 
-  await blackListTokenModel.create({ token });
+  const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+  if (token) {
+      await blackListTokenModel.create({ token });
+  }
 
   console.log("User logged out successfully");
-
-  res.status(200).json({ message: "Logged out" });
+  return res.status(200).json({ message: "Logged out" });
 };
+
