@@ -70,8 +70,6 @@ function initializeSocket(server) {
 }
 
 const sendMessageToSocketId = (socketId, messageObject) => {
-    console.log(messageObject);
-
     if (io) {
         io.to(socketId).emit(messageObject.event, messageObject.data);
     } else {
