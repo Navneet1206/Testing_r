@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import FinishRide from '../components/FinishRide'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import LiveTracking from '../components/LiveTracking'
-import { SocketContext } from '../context/SocketContext';
-import RideCompletePopup from '../components/RideCompletePopup';
 
 const CaptainRiding = () => {
 
@@ -13,21 +11,8 @@ const CaptainRiding = () => {
     const finishRidePanelRef = useRef(null)
     const location = useLocation()
     const rideData = location.state?.ride
-    const { socket } = useContext(SocketContext);
-    const [showCompletePopup, setShowCompletePopup] = useState(false);
-    const [rideDetails, setRideDetails] = useState(null);
-    
-    useEffect(() => {
-        socket.on('ride-completed', (ride) => {
-          setRideDetails({
-            distance: (ride.distance / 1000).toFixed(1),
-            fare: ride.fare
-          });
-          setShowCompletePopup(true);
-        });
-    
-        return () => socket.off('ride-completed');
-      }, []);
+
+
 
     useGSAP(function () {
         if (finishRidePanel) {
@@ -41,13 +26,6 @@ const CaptainRiding = () => {
         }
     }, [ finishRidePanel ])
 
-    const handleConfirm = () => {
-        setShowCompletePopup(false);
-        // Reset ride state
-        setRideDetails(null);
-        // Redirect to home
-        window.location.href = '/captain-home';
-      };
 
     return (
         <div className='h-screen relative flex flex-col justify-end'>
@@ -79,12 +57,7 @@ const CaptainRiding = () => {
             <div className='h-screen fixed w-screen top-0 z-[-1]'>
                 <LiveTracking />
             </div>
-            {showCompletePopup && (
-        <RideCompletePopup 
-          onConfirm={handleConfirm}
-          rideDetails={rideDetails}
-        />
-      )}
+
         </div>
     )
 }
