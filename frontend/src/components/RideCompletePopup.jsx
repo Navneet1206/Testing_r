@@ -20,3 +20,4 @@ const RideCompletePopup = ({ onConfirm, rideDetails }) => {
     </div>
   );
 };
+export default RideCompletePopup;
