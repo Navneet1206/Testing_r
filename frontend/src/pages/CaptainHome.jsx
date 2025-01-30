@@ -116,7 +116,7 @@ const CaptainHome = () => {
                     <i className="text-lg font-medium ri-logout-box-r-line"></i>
                 </Link>
             </div>
-            <div className='flex-1 flex flex-col mt-4 overflow-y-scroll'>
+            <div className='flex-1 flex flex-col mt-16'>
                 <div className='flex-1 h-1/5 p-0'>
                     <LiveTracking 
                         sourceCoords={captain.location}
