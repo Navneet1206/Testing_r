@@ -93,7 +93,7 @@ const LiveTracking = ({ sourceCoords, destinationCoords }) => {
         };
     }, [socket]);
 
-    return <div id="map" style={{ width: '100%', height: '500px' }}></div>;
+    return <div id="map" style={{ width: '100%', height: '80%',marginTop: '4 rem' }}></div>;
 };
 
 export default LiveTracking;
