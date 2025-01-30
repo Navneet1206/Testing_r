@@ -41,7 +41,7 @@ const CaptainHome = () => {
             }
         };
 
-        const locationInterval = setInterval(updateLocation, 1000);
+        const locationInterval = setInterval(updateLocation, 10000);
         updateLocation();
 
         return () => clearInterval(locationInterval);
@@ -119,7 +119,8 @@ const CaptainHome = () => {
             <div className='flex-1 flex flex-col mt-16'>
                 <div className='flex-1 h-1/5 p-0'>
                     <LiveTracking 
-                    currentPosition={captain.location}
+                        sourceCoords={captain.location}
+                        destinationCoords={captain.location}
                     />
                 </div>
                 <div className='h-1/5 pr-6 pl-6 overflow-y-scroll bg-white'>

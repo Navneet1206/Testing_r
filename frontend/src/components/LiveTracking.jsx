@@ -44,12 +44,6 @@ const LiveTracking = ({ sourceCoords, destinationCoords }) => {
     };
 
     useEffect(() => {
-        console.log('Received Source Coords:', sourceCoords);
-        console.log('Received Destination Coords:', destinationCoords);
-    }, [sourceCoords, destinationCoords]);
-    
-
-    useEffect(() => {
         if (map && marker) {
             map.setCenter(currentPosition);
             marker.setPosition(currentPosition);
