@@ -120,7 +120,6 @@ const CaptainHome = () => {
                 <div className='flex-1 h-1/5 p-0'>
                     <LiveTracking 
                         sourceCoords={captain.location}
-                        destinationCoords={captain.location}
                     />
                 </div>
                 <div className='h-1/5 pr-6 pl-6 overflow-y-scroll bg-white'>

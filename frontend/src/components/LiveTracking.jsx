@@ -44,6 +44,12 @@ const LiveTracking = ({ sourceCoords, destinationCoords }) => {
     };
 
     useEffect(() => {
+        console.log('Received Source Coords:', sourceCoords);
+        console.log('Received Destination Coords:', destinationCoords);
+    }, [sourceCoords, destinationCoords]);
+    
+
+    useEffect(() => {
         if (map && marker) {
             map.setCenter(currentPosition);
             marker.setPosition(currentPosition);
@@ -81,17 +87,28 @@ const LiveTracking = ({ sourceCoords, destinationCoords }) => {
 
     useEffect(() => {
         if (socket) {
-            socket.on('captain-location-update', (location) => {
-                setCurrentPosition({ lat: location.ltd, lng: location.lng });
+            socket.on("captain-location-update", (location) => {
+                console.log(`📍 Live Location Update: lat=${location.ltd}, lng=${location.lng}`);
+    
+                setCurrentPosition({
+                    lat: location.ltd,
+                    lng: location.lng,
+                });
+    
+                if (marker) {
+                    marker.setPosition(new window.google.maps.LatLng(location.ltd, location.lng));
+                    map.setCenter(new window.google.maps.LatLng(location.ltd, location.lng));
+                }
             });
         }
-
+    
         return () => {
             if (socket) {
-                socket.off('captain-location-update');
+                socket.off("captain-location-update");
             }
         };
     }, [socket]);
+    
 
     return <div id="map" style={{ width: '100%', height: '80%' }}></div>;
 };
