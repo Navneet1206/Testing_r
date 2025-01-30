@@ -15,7 +15,6 @@ import CaptainLogout from './pages/CaptainLogout';
 import Riding from './pages/Riding';
 import CaptainRiding from './pages/CaptainRiding';
 import 'remixicon/fonts/remixicon.css';
-import Navbar from './components/Navbar';
 import VerifyEmailOTP from './pages/VerifyEmailOTP';
 import VerifyMobileOTP from './pages/VerifyMobileOTP';
 
@@ -35,7 +34,7 @@ const App = () => {
           element={
             <UserProtectWrapper>
               <>
-                <Navbar />
+                
                 <Home />
               </>
             </UserProtectWrapper>
@@ -46,7 +45,7 @@ const App = () => {
           element={
             <UserProtectWrapper>
               <>
-                <Navbar />
+                
                 <UserLogout />
               </>
             </UserProtectWrapper>
@@ -57,7 +56,7 @@ const App = () => {
           element={
             <CaptainProtectWrapper>
               <>
-                <Navbar />
+                
                 <CaptainHome />
               </>
             </CaptainProtectWrapper>
@@ -68,7 +67,7 @@ const App = () => {
           element={
             <CaptainProtectWrapper>
               <>
-                <Navbar />
+                
                 <CaptainLogout />
               </>
             </CaptainProtectWrapper>
@@ -79,7 +78,7 @@ const App = () => {
           element={
             <UserProtectWrapper>
               <>
-                <Navbar />
+                
                 <Riding />
               </>
             </UserProtectWrapper>
@@ -90,7 +89,7 @@ const App = () => {
           element={
             <CaptainProtectWrapper>
               <>
-                <Navbar />
+                
                 <CaptainRiding />
               </>
             </CaptainProtectWrapper>
@@ -101,7 +100,7 @@ const App = () => {
           element={
             <CaptainProtectWrapper>
               <>
-                <Navbar />
+                
                 <UserRideHistory />
               </>
             </CaptainProtectWrapper>
