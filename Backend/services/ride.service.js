@@ -12,16 +12,16 @@ async function getFare(pickup, destination) {
     const distanceTime = await mapService.getDistanceTime(pickup, destination);
 
     const baseFare = {
-        auto: 30,
-        car: 50,
-        moto: 20
-    };
+        '4-seater': 30,  // Updated
+        '7-seater': 50,  // Updated
+        '11-seater': 70  // Updated
+      };
 
-    const perKmRate = {
-        auto: 10,
-        car: 15,
-        moto: 8
-    };
+      const perKmRate = {
+        '4-seater': 10,  // Updated
+        '7-seater': 15,  // Updated
+        '11-seater': 20  // Updated
+      };
 
     const perMinuteRate = {
         auto: 2,
