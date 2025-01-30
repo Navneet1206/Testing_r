@@ -35,29 +35,25 @@ function initializeSocket(server) {
         socket.on('update-location-captain', async (data) => {
             try {
                 const { userId, location } = data;
-        
+
                 if (!location || !location.ltd || !location.lng) {
-                    console.error("❌ Invalid location data received:", data);
-                    return socket.emit('error', { message: "Invalid location data" });
+                    return socket.emit('error', { message: 'Invalid location data' });
                 }
-        
-                console.log(`✅ Updating Captain Location in DB: userId=${userId}, lat=${location.ltd}, lng=${location.lng}`);
-        
+
                 await captainModel.findByIdAndUpdate(userId, {
                     location: {
-                        type: "Point",
+                        type: 'Point',
                         coordinates: [location.lng, location.ltd], // GeoJSON format: [longitude, latitude]
                     },
                 });
-        
+
+                // Broadcast the updated location to all connected clients
                 io.emit('captain-location-update', { userId, location });
-        
             } catch (error) {
-                console.error("❌ Error updating captain location:", error);
-                socket.emit('error', { message: "Failed to update location" });
+                console.error('Error updating captain location:', error);
+                socket.emit('error', { message: 'Failed to update location' });
             }
         });
-        
 
         // Handle client disconnection
         socket.on('disconnect', async () => {
