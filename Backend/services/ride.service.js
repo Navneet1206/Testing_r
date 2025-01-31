@@ -4,7 +4,6 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
 async function getFare(pickup, destination) {
-
     if (!pickup || !destination) {
         throw new Error('Pickup and destination are required');
     }
@@ -12,34 +11,33 @@ async function getFare(pickup, destination) {
     const distanceTime = await mapService.getDistanceTime(pickup, destination);
 
     const baseFare = {
-        '4-seater': 30,  // Updated
-        '7-seater': 50,  // Updated
-        '11-seater': 70  // Updated
-      };
+        '4-seater': 30,
+        '7-seater': 50,
+        '11-seater': 70
+    };
 
-      const perKmRate = {
-        '4-seater': 10,  // Updated
-        '7-seater': 15,  // Updated
-        '11-seater': 20  // Updated
-      };
+    const perKmRate = {
+        '4-seater': 10,
+        '7-seater': 15,
+        '11-seater': 20
+    };
 
     const perMinuteRate = {
-        auto: 2,
-        car: 3,
-        moto: 1.5
+        '4-seater': 2,
+        '7-seater': 3,
+        '11-seater': 4
     };
 
-
+    console.log("Distance & Time Data:", distanceTime); // Debugging
 
     const fare = {
-        auto: Math.round(baseFare.auto + ((distanceTime.distance.value / 1000) * perKmRate.auto) + ((distanceTime.duration.value / 60) * perMinuteRate.auto)),
-        car: Math.round(baseFare.car + ((distanceTime.distance.value / 1000) * perKmRate.car) + ((distanceTime.duration.value / 60) * perMinuteRate.car)),
-        moto: Math.round(baseFare.moto + ((distanceTime.distance.value / 1000) * perKmRate.moto) + ((distanceTime.duration.value / 60) * perMinuteRate.moto))
+        '4-seater': Math.round(baseFare['4-seater'] + ((distanceTime.distance.value / 1000) * perKmRate['4-seater']) + ((distanceTime.duration.value / 60) * perMinuteRate['4-seater'])),
+        '7-seater': Math.round(baseFare['7-seater'] + ((distanceTime.distance.value / 1000) * perKmRate['7-seater']) + ((distanceTime.duration.value / 60) * perMinuteRate['7-seater'])),
+        '11-seater': Math.round(baseFare['11-seater'] + ((distanceTime.distance.value / 1000) * perKmRate['11-seater']) + ((distanceTime.duration.value / 60) * perMinuteRate['11-seater']))
     };
 
+    console.log("Calculated Fare:", fare); // Debugging
     return fare;
-
-
 }
 
 module.exports.getFare = getFare;

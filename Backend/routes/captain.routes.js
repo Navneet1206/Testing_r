@@ -26,8 +26,8 @@ router.post(
     body("vehicle.capacity")
       .isInt({ min: 1 })
       .withMessage("Capacity must be at least 1"),
-    body("vehicle.vehicleType")
-      .isIn(["car", "motorcycle", "auto"])
+      body("vehicle.vehicleType")
+      .isIn(["4-seater", "7-seater", "11-seater"]) 
       .withMessage("Invalid vehicle type"),
     body("mobileNumber")
       .isLength({ min: 10 })

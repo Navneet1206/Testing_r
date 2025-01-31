@@ -14,11 +14,20 @@ module.exports.createRide = async (req, res) => {
     const { pickup, destination, vehicleType } = req.body;
 
     try {
+        const fareData = await rideService.getFare(pickup, destination);
+        console.log("Fare Data:", fareData); // Debugging
+
+        if (!fareData[vehicleType]) {
+            console.error("Invalid vehicle type or missing fare:", vehicleType);
+            return res.status(400).json({ message: "Invalid vehicle type or fare calculation issue" });
+        }
+
         const ride = await rideService.createRide({
             user: req.user._id,
             pickup,
             destination,
             vehicleType,
+            fare: fareData[vehicleType] // Ensure fare is passed
         });
 
         res.status(201).json({ ...ride.toObject(), otp: ride.otp });
