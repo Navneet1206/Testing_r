@@ -32,7 +32,18 @@ const CaptainSignup = () => {
   // Update form data
   const updateFormData = (e, section = '') => {
     const { name, value } = e.target;
-    if (section) {
+    if (section === 'vehicle' && name === 'type') {
+      // Set capacity based on vehicle type
+      const capacity = value === '4-seater' ? '4' : value === '7-seater' ? '7' : value === '11-seater' ? '11' : '';
+      setFormData((prev) => ({
+        ...prev,
+        vehicle: {
+          ...prev.vehicle,
+          type: value,
+          capacity: capacity,
+        },
+      }));
+    } else if (section) {
       setFormData((prev) => ({
         ...prev,
         [section]: {
@@ -70,8 +81,7 @@ const CaptainSignup = () => {
         {[...Array(5)].map((_, index) => (
           <div
             key={index}
-            className={`h-1 w-full rounded ${index < passwordStrength ? colors[index] : 'bg-gray-200'
-              }`}
+            className={`h-1 w-full rounded ${index < passwordStrength ? colors[index] : 'bg-gray-200'}`}
           />
         ))}
       </div>
@@ -262,15 +272,6 @@ const CaptainSignup = () => {
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                required
-                name="capacity"
-                type="number"
-                placeholder="Vehicle Capacity"
-                value={formData.vehicle.capacity}
-                onChange={(e) => updateFormData(e, 'vehicle')}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-300"
-              />
               <select
                 required
                 name="type"
@@ -279,10 +280,13 @@ const CaptainSignup = () => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-300"
               >
                 <option value="">Select Vehicle Type</option>
-                <option value="car">Car</option>
-                <option value="auto">Auto</option>
-                <option value="moto">Moto</option>
+                <option value="4-seater">4 Seater</option>
+                <option value="7-seater">7 Seater</option>
+                <option value="11-seater">11 Seater</option>
               </select>
+              <div className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-500">
+                Capacity: {formData.vehicle.capacity || 'Auto-filled'} Seats
+              </div>
             </div>
             <div className="flex space-x-4">
               <button
@@ -294,7 +298,7 @@ const CaptainSignup = () => {
               </button>
               <button
                 type="submit"
-                disabled={!formData.vehicle.color || !formData.vehicle.plate || !formData.vehicle.capacity || !formData.vehicle.type || isLoading}
+                disabled={!formData.vehicle.color || !formData.vehicle.plate || !formData.vehicle.type || isLoading}
                 className="w-1/2 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 disabled:opacity-50 transition duration-300"
               >
                 {isLoading ? 'Creating Account...' : 'Create Account'}
@@ -322,8 +326,7 @@ const CaptainSignup = () => {
             {[1, 2, 3].map((step) => (
               <div
                 key={step}
-                className={`w-8 h-1 mx-1 rounded-full ${currentStep === step ? 'bg-blue-500' : 'bg-gray-300'
-                  }`}
+                className={`w-8 h-1 mx-1 rounded-full ${currentStep === step ? 'bg-blue-500' : 'bg-gray-300'}`}
               />
             ))}
           </div>
