@@ -43,9 +43,10 @@ function initializeSocket(server) {
                 await captainModel.findByIdAndUpdate(userId, {
                     location: {
                         type: 'Point',
-                        coordinates: [location.lng, location.ltd], // GeoJSON format: [longitude, latitude]
+                        coordinates: [location.lng, location.ltd], // GeoJSON format
                     },
-                });
+                }, { new: true });  // Ensures updated data is returned
+                
 
                 // Broadcast the updated location to all connected clients
                 io.emit('captain-location-update', { userId, location });
