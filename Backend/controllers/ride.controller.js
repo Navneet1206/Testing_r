@@ -83,23 +83,53 @@ module.exports.confirmRide = async (req, res) => {
     const { rideId } = req.body;
 
     try {
+        // Ensure the ride is assigned correctly
         const ride = await rideService.confirmRide({ rideId, captain: req.captain });
 
+        if (!ride) {
+            return res.status(404).json({ message: "Ride not found or already assigned." });
+        }
+
+        // Ensure the ride has a valid user with a socket connection
+        if (!ride.user || !ride.user.socketId) {
+            return res.status(400).json({ message: "User socket ID is missing. Cannot confirm ride." });
+        }
+
+        // Send the confirmation message to the correct user
         sendMessageToSocketId(ride.user.socketId, {
             event: 'ride-confirmed',
             data: {
-                ...ride.toObject(),
+                rideId: ride._id,
                 otp: ride.otp, // Ensure OTP is included
-                captain: ride.captain, // Ensure captain details are included
+                captain: {
+                    id: ride.captain._id,
+                    name: `${ride.captain.fullname.firstname} ${ride.captain.fullname.lastname}`,
+                    vehicle: ride.captain.vehicle,
+                    profilePhoto: ride.captain.profilePhoto,
+                    mobileNumber: ride.captain.mobileNumber
+                },
+                pickup: ride.pickup,
+                destination: ride.destination,
+                fare: ride.fare
             }
         });
 
-        return res.status(200).json(ride);
+        return res.status(200).json({
+            message: "Ride confirmed successfully",
+            ride: {
+                id: ride._id,
+                captain: ride.captain,
+                pickup: ride.pickup,
+                destination: ride.destination,
+                fare: ride.fare
+            }
+        });
+
     } catch (err) {
-        console.log(err);
-        return res.status(500).json({ message: err.message });
+        console.error("Error in confirmRide:", err);
+        return res.status(500).json({ message: "Internal server error" });
     }
-}
+};
 
 module.exports.startRide = async (req, res) => {
     const errors = validationResult(req);
@@ -135,18 +165,55 @@ module.exports.endRide = async (req, res) => {
     const { rideId } = req.body;
 
     try {
+        // Ensure the ride exists and is assigned to this captain
         const ride = await rideService.endRide({ rideId, captain: req.captain });
 
+        if (!ride) {
+            return res.status(404).json({ message: "Ride not found or already completed." });
+        }
+
+        // Ensure the ride has a valid user with a socket connection
+        if (!ride.user || !ride.user.socketId) {
+            return res.status(400).json({ message: "User socket ID is missing. Cannot send ride completion update." });
+        }
+
+        // Send a ride completion confirmation message to the user
         sendMessageToSocketId(ride.user.socketId, {
             event: 'ride-ended',
-            data: ride
+            data: {
+                message: "Your ride has been successfully completed!",
+                rideId: ride._id,
+                fare: ride.fare,
+                captain: {
+                    id: ride.captain._id,
+                    name: `${ride.captain.fullname.firstname} ${ride.captain.fullname.lastname}`,
+                    vehicle: ride.captain.vehicle,
+                    profilePhoto: ride.captain.profilePhoto
+                },
+                pickup: ride.pickup,
+                destination: ride.destination,
+                status: "completed"
+            }
         });
 
-        return res.status(200).json(ride);
+        return res.status(200).json({
+            message: "Ride ended successfully",
+            ride: {
+                id: ride._id,
+                status: "completed",
+                fare: ride.fare,
+                captain: ride.captain,
+                pickup: ride.pickup,
+                destination: ride.destination
+            }
+        });
+
     } catch (err) {
-        return res.status(500).json({ message: err.message });
+        console.error("Error in endRide:", err);
+        return res.status(500).json({ message: "Internal server error" });
     }
-}
+};
+
 
 // Backend/controllers/ride.controller.js
 module.exports.getUserRideHistory = async (req, res) => {

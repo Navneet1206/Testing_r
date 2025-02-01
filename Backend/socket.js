@@ -19,9 +19,19 @@ function initializeSocket(server) {
         socket.on('join', async (data) => {
             try {
                 const { userId, userType } = data;
-
+        
                 if (userType === 'captain') {
-                    await captainModel.findByIdAndUpdate(userId, { socketId: socket.id });
+                    const updatedCaptain = await captainModel.findByIdAndUpdate(userId, { 
+                        socketId: socket.id,
+                        status: 'active'
+                    }, { new: true });
+        
+                    if (!updatedCaptain) {
+                        console.log("Captain not found");
+                        return socket.emit("error", { message: "Captain not found" });
+                    }
+        
+                    console.log(`Captain ${updatedCaptain.fullname.firstname} is now active`);
                 } else if (userType === 'rider') {
                     await userModel.findByIdAndUpdate(userId, { socketId: socket.id });
                 }
@@ -30,31 +40,56 @@ function initializeSocket(server) {
                 socket.emit('error', { message: 'Failed to update socket ID' });
             }
         });
+        
 
         // Handle captain location updates
         socket.on('update-location-captain', async (data) => {
             try {
-                const { userId, location } = data;
-
+                const { captainId, location } = data;
+        
                 if (!location || !location.ltd || !location.lng) {
                     return socket.emit('error', { message: 'Invalid location data' });
                 }
-
-                await captainModel.findByIdAndUpdate(userId, {
+        
+                console.log(`Updating location for Captain ${captainId}:`, location);
+        
+                // Update captain's location in the database
+                const updatedCaptain = await captainModel.findByIdAndUpdate(captainId, {
                     location: {
                         type: 'Point',
-                        coordinates: [location.lng, location.ltd], // GeoJSON format
+                        coordinates: [location.lng, location.ltd],
                     },
-                }, { new: true });  // Ensures updated data is returned
-                
-
-                // Broadcast the updated location to all connected clients
-                io.emit('captain-location-update', { userId, location });
+                }, { new: true });
+        
+                if (!updatedCaptain) {
+                    return socket.emit('error', { message: 'Captain not found' });
+                }
+        
+                console.log(`New location stored in DB:`, updatedCaptain.location);
+        
+                // Find the active ride for this captain
+                const activeRide = await rideModel.findOne({
+                    captain: captainId,
+                    status: { $in: ['ongoing', 'accepted'] } // Active ride statuses
+                }).populate('user');
+        
+                if (!activeRide) {
+                    return socket.emit('error', { message: 'No active ride found for this captain' });
+                }
+        
+                // Send location update ONLY to the user who booked the ride
+                if (activeRide.user && activeRide.user.socketId) {
+                    console.log(`Sending location to user ${activeRide.user.socketId}`);
+                    io.to(activeRide.user.socketId).emit('captain-location-update', { captainId, location });
+                }
+        
             } catch (error) {
                 console.error('Error updating captain location:', error);
                 socket.emit('error', { message: 'Failed to update location' });
             }
         });
+        
+        
 
         // Handle client disconnection
         socket.on('disconnect', async () => {
