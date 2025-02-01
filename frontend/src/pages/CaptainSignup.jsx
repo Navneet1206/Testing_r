@@ -282,7 +282,6 @@ const CaptainSignup = () => {
                 <option value="">Select Vehicle Type</option>
                 <option value="4-seater">4 Seater</option>
                 <option value="7-seater">7 Seater</option>
-                <option value="11-seater">11 Seater</option>
               </select>
               <div className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-500">
                 Capacity: {formData.vehicle.capacity || 'Auto-filled'} Seats
