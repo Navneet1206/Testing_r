@@ -70,12 +70,16 @@ function initializeSocket(server) {
         }
     
         try {
-            const updatedCaptain = await captainModel.findByIdAndUpdate(data.captainId, {
-                location: {
-                    type: 'Point',
-                    coordinates: [data.location.lng, data.location.ltd]
-                }
-            }, { new: true });
+            const updatedCaptain = await captainModel.findByIdAndUpdate(
+                data.captainId, 
+                {
+                    location: {
+                        type: 'Point',
+                        coordinates: [data.location.lng, data.location.ltd]
+                    }
+                }, 
+                { new: true }
+            );
     
             if (!updatedCaptain) {
                 console.log("❌ Error: Captain not found in database");
@@ -88,6 +92,7 @@ function initializeSocket(server) {
             socket.emit("error", { message: "Failed to update location" });
         }
     });
+    
     
 
     // Handle client disconnection

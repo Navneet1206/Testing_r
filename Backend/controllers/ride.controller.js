@@ -42,8 +42,11 @@ module.exports.createRide = async (req, res) => {
                 2
             );
 
-            console.log("Updated Nearby Captains:", captainsInRadius);
-
+            
+console.log("✅ Found Captains in Radius:", captainsInRadius);
+if (captainsInRadius.length === 0) {
+    console.log("⚠ No captains available nearby.");
+}
             if (captainsInRadius.length > 0) {
                 clearInterval(searchInterval);
                 const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate('user');

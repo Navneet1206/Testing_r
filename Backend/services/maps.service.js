@@ -81,6 +81,10 @@ module.exports.getCaptainsInTheRadius = async (lat, lng, radius) => {
             }
         });
 
+        if (captains.length === 0) {
+            console.log("⚠ No captains found. Check if captains are storing locations properly.");
+        }
+
         console.log(`✅ Found ${captains.length} captains in radius`);
         return captains;
     } catch (err) {
@@ -88,5 +92,4 @@ module.exports.getCaptainsInTheRadius = async (lat, lng, radius) => {
         return [];
     }
 };
-
 
