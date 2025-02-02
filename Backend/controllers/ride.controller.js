@@ -15,7 +15,7 @@ module.exports.createRide = async (req, res) => {
 
     try {
         const fareData = await rideService.getFare(pickup, destination);
-        console.log("Fare Data:", fareData); // Debugging
+        console.log("Fare Data:", fareData);
 
         if (!fareData[vehicleType]) {
             console.error("Invalid vehicle type or missing fare:", vehicleType);
@@ -27,34 +27,44 @@ module.exports.createRide = async (req, res) => {
             pickup,
             destination,
             vehicleType,
-            fare: fareData[vehicleType] // Ensure fare is passed
+            fare: fareData[vehicleType]
         });
 
         res.status(201).json({ ...ride.toObject(), otp: ride.otp });
 
         const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
+        console.log("Pickup Coordinates:", pickupCoordinates);
 
-        const captainsInRadius = await mapService.getCaptainsInTheRadius(
-            pickupCoordinates.ltd,
-            pickupCoordinates.lng,
-            2 // Radius in kilometers
-        );
+        let searchInterval = setInterval(async () => {
+            const captainsInRadius = await mapService.getCaptainsInTheRadius(
+                pickupCoordinates.ltd,
+                pickupCoordinates.lng,
+                2
+            );
 
-        const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate('user');
+            console.log("Updated Nearby Captains:", captainsInRadius);
 
-        captainsInRadius.forEach((captain) => {
-            if (captain.socketId) {
-                sendMessageToSocketId(captain.socketId, {
-                    event: 'new-ride',
-                    data: rideWithUser,
+            if (captainsInRadius.length > 0) {
+                clearInterval(searchInterval);
+                const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate('user');
+                
+                captainsInRadius.forEach((captain) => {
+                    if (captain.socketId) {
+                        console.log(`Sending ride request to Captain ${captain._id}, Socket ID: ${captain.socketId}`);
+                        sendMessageToSocketId(captain.socketId, {
+                            event: 'new-ride',
+                            data: rideWithUser,
+                        });
+                    }
                 });
             }
-        });
+        }, 5000); // Check every 5 seconds
     } catch (err) {
         console.error('Error creating ride:', err);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
 
 
 

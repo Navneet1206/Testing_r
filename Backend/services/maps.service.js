@@ -70,21 +70,23 @@ module.exports.getAutoCompleteSuggestions = async (input) => {
 
 module.exports.getCaptainsInTheRadius = async (lat, lng, radius) => {
     try {
-      const captains = await captainModel.find({
-        location: {
-          $near: {
-            $geometry: {
-              type: 'Point',
-              coordinates: [lng, lat], // GeoJSON format: [longitude, latitude]
-            },
-            $maxDistance: radius * 1000, // Convert radius to meters
-          },
-        },
-      });
-  
-      return captains;
+        console.log(`🔍 Searching captains near: Latitude ${lat}, Longitude ${lng}, Radius: ${radius} km`);
+
+        const captains = await captainModel.find({
+            location: {
+                $near: {
+                    $geometry: { type: "Point", coordinates: [lng, lat] },
+                    $maxDistance: radius * 1000
+                }
+            }
+        });
+
+        console.log(`✅ Found ${captains.length} captains in radius`);
+        return captains;
     } catch (err) {
-      console.error(err);
-      throw new Error('Unable to fetch captains in the radius');
+        console.error("🔥 Error finding captains:", err);
+        return [];
     }
-  };
+};
+
+
