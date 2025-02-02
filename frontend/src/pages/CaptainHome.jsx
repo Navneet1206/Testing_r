@@ -28,7 +28,7 @@ const CaptainHome = () => {
 
         const updateLocation = () => {
             if (navigator.geolocation) {
-                navigator.geolocation.watchPosition((position) => {
+                navigator.geolocation.getCurrentPosition((position) => {
                     const { latitude, longitude } = position.coords;
                     socket.emit('update-location-captain', {
                         userId: captain._id,
@@ -37,16 +37,9 @@ const CaptainHome = () => {
                             lng: longitude,
                         },
                     });
-                }, (error) => {
-                    console.error("Error getting location:", error);
-                }, {
-                    enableHighAccuracy: true,
-                    maximumAge: 0,
-                    timeout: 10000
                 });
             }
         };
-        
 
         const locationInterval = setInterval(updateLocation, 10000);
         updateLocation();

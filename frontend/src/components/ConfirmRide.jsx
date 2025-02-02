@@ -1,35 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React from 'react';
 
 const ConfirmRide = (props) => {
-    const [distance, setDistance] = useState(null);
-    const [time, setTime] = useState(null);
-
-    useEffect(() => {
-        const fetchDistance = async () => {
-            try {
-                const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-distance-time`, {
-                    params: {
-                        origin: props.pickup,
-                        destination: props.destination
-                    },
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-
-                if (response.status === 200) {
-                    setDistance(response.data.distance.text);
-                    setTime(response.data.duration.text);
-                }
-            } catch (error) {
-                console.error("Error fetching distance:", error);
-            }
-        };
-
-        fetchDistance();
-    }, [props.pickup, props.destination]);
-
     return (
         <div>
             <h5 className='p-1 text-center w-[93%] absolute top-0' onClick={() => {
@@ -57,22 +28,6 @@ const ConfirmRide = (props) => {
                         <div>
                             <h3 className='text-lg font-medium'>{props.destination}</h3>
                             <p className='text-sm -mt-1 text-gray-600'>Drop-off Location</p>
-                        </div>
-                    </div>
-
-                    {/* Distance & Estimated Time */}
-                    <div className='flex items-center gap-5 p-3 border-b-2'>
-                        <i className="ri-road-map-line"></i>
-                        <div>
-                            <h3 className='text-lg font-medium'>{distance || "Calculating..."}</h3>
-                            <p className='text-sm -mt-1 text-gray-600'>Estimated Distance</p>
-                        </div>
-                    </div>
-                    <div className='flex items-center gap-5 p-3 border-b-2'>
-                        <i className="ri-time-line"></i>
-                        <div>
-                            <h3 className='text-lg font-medium'>{time || "Calculating..."}</h3>
-                            <p className='text-sm -mt-1 text-gray-600'>Estimated Time</p>
                         </div>
                     </div>
 
