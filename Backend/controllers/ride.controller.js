@@ -4,58 +4,8 @@ const mapService = require('../services/maps.service');
 const { sendMessageToSocketId } = require('../socket');
 const rideModel = require('../models/ride.model');
 
-
 module.exports.createRide = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { pickup, destination, vehicleType } = req.body;
-
-    try {
-        const fareData = await rideService.getFare(pickup, destination);
-        console.log("(user.controller.js)Fare Data:", fareData); // Debugging
-
-        if (!fareData[vehicleType]) {
-            console.error("Invalid vehicle type or missing fare:", vehicleType);
-            return res.status(400).json({ message: "Invalid vehicle type or fare calculation issue" });
-        }
-
-        const ride = await rideService.createRide({
-            user: req.user._id,
-            pickup,
-            destination,
-            vehicleType,
-            fare: fareData[vehicleType] // Ensure fare is passed
-        });
-
-        res.status(201).json({ ...ride.toObject(), otp: ride.otp,distance: ride.distance });
-
-        const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
-
-        const captainsInRadius = await mapService.getCaptainsInTheRadius(
-            pickupCoordinates.ltd,
-            pickupCoordinates.lng,
-            2 // Radius in kilometers
-        );
-
-        const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate('user');
-
-        captainsInRadius.forEach((captain) => {
-            if (captain.socketId) {
-                sendMessageToSocketId(captain.socketId, {
-                    event: 'new-ride',
-                    data: rideWithUser,
-                });
-            }
-        });
-    } catch (err) {
-        console.error('Error creating ride:', err);
-        return res.status(500).json({ message: 'Internal server error' });
-    }
 };
-
 
 
 module.exports.getFare = async (req, res) => {
@@ -91,7 +41,6 @@ module.exports.confirmRide = async (req, res) => {
                 ...ride.toObject(),
                 otp: ride.otp, // Ensure OTP is included
                 captain: ride.captain, // Ensure captain details are included
-                distance: ride.distance, // Ensure distance is included
             }
         });
 
