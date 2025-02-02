@@ -51,7 +51,7 @@ module.exports.registerCaptain = async (req, res, next) => {
     });
   } catch (error) {
     if (error.code === 11000) {
-      console.log("Duplicate key error:", error);
+      console.log("(user.controller.js)Duplicate key error:", error);
       let field = Object.keys(error.keyValue)[0];
       return res.status(400).json({
         message: `Duplicate value found for ${field}. Please use a different ${field}.`,
@@ -78,7 +78,7 @@ module.exports.verifyEmailOTP = async (req, res, next) => {
   const storedOTP = captain.emailOTP.trim();
 
   // Debugging: Log the OTPs
-  console.log(`Stored OTP: ${storedOTP}, Entered OTP: ${normalizedOTP}`);
+  console.log(`(user.controller.js)Stored OTP: ${storedOTP}, Entered OTP: ${normalizedOTP}`);
 
   if (String(storedOTP).trim() !== String(normalizedOTP).trim()) {
     return res.status(400).json({ message: "Invalid OTP" });
@@ -94,13 +94,13 @@ module.exports.verifyMobileOTP = async (req, res, next) => {
   let { mobileNumber, otp } = req.body;
 
   // Debugging: Log incoming request data
-  console.log("Incoming Mobile OTP Verification Request for Captain:");
-  console.log("Mobile Number:", mobileNumber);
-  console.log("Entered OTP:", otp);
+  console.log("(user.controller.js)Incoming Mobile OTP Verification Request for Captain:");
+  console.log("(user.controller.js)Mobile Number:", mobileNumber);
+  console.log("(user.controller.js)Entered OTP:", otp);
 
   // Check if both mobileNumber and OTP are provided
   if (!mobileNumber || !otp) {
-    console.log("Mobile number or OTP missing in request.");
+    console.log("(user.controller.js)Mobile number or OTP missing in request.");
     return res.status(400).json({ message: "Mobile number and OTP are required" });
   }
 
@@ -110,22 +110,22 @@ module.exports.verifyMobileOTP = async (req, res, next) => {
   }
 
   // Debugging: Log normalized mobile number
-  console.log("Normalized Mobile Number for Query:", mobileNumber);
+  console.log("(user.controller.js)Normalized Mobile Number for Query:", mobileNumber);
 
   try {
     // Find the captain by the normalized mobile number
     const captain = await captainModel.findOne({ mobileNumber }).select("+mobileOTP");
     if (!captain) {
-      console.log("Captain not found for mobile number:", mobileNumber);
+      console.log("(user.controller.js)Captain not found for mobile number:", mobileNumber);
       return res.status(404).json({ message: "Captain not found" });
     }
 
     // Debugging: Log stored OTP
-    console.log("Stored OTP in DB for Captain:", captain.mobileOTP);
+    console.log("(user.controller.js)Stored OTP in DB for Captain:", captain.mobileOTP);
 
     // Validate OTP
     if (String(captain.mobileOTP).trim() !== String(otp).trim()) {
-      console.log(`OTP mismatch: Expected ${captain.mobileOTP}, Received ${otp}`);
+      console.log(`(user.controller.js)OTP mismatch: Expected ${captain.mobileOTP}, Received ${otp}`);
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
@@ -133,11 +133,11 @@ module.exports.verifyMobileOTP = async (req, res, next) => {
     captain.mobileVerified = true;
     await captain.save();
 
-    console.log("Mobile number verified successfully for Captain:", mobileNumber);
+    console.log("(user.controller.js)Mobile number verified successfully for Captain:", mobileNumber);
     return res.status(200).json({ message: "Mobile number verified successfully" });
   } catch (error) {
     // Debugging: Log any unexpected errors
-    console.error("Error during Captain mobile OTP verification:", error);
+    console.error("(user.controller.js)Error during Captain mobile OTP verification:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -175,11 +175,11 @@ module.exports.loginCaptain = async (req, res, next) => {
 
 module.exports.getCaptainProfile = async (req, res, next) => {
   if (!req.captain) {
-    console.log('No captain found in request');
+    console.log('(user.controller.js)No captain found in request');
     return res.status(404).json({ message: 'Captain not found' });
   }
 
-  console.log('Returning captain profile:', req.captain);
+  console.log('(user.controller.js)Returning captain profile:', req.captain);
   res.status(200).json({ captain: req.captain });
 };
 
@@ -191,7 +191,7 @@ module.exports.logoutCaptain = async (req, res, next) => {
       await blackListTokenModel.create({ token });
   }
 
-  console.log("Captain logged out successfully");
+  console.log("(user.controller.js)Captain logged out successfully");
   return res.status(200).json({ message: "Logged out" });
 };
 

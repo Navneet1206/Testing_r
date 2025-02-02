@@ -15,7 +15,7 @@ module.exports.createRide = async (req, res) => {
 
     try {
         const fareData = await rideService.getFare(pickup, destination);
-        console.log("Fare Data:", fareData); // Debugging
+        console.log("(user.controller.js)Fare Data:", fareData); // Debugging
 
         if (!fareData[vehicleType]) {
             console.error("Invalid vehicle type or missing fare:", vehicleType);
@@ -30,7 +30,7 @@ module.exports.createRide = async (req, res) => {
             fare: fareData[vehicleType] // Ensure fare is passed
         });
 
-        res.status(201).json({ ...ride.toObject(), otp: ride.otp });
+        res.status(201).json({ ...ride.toObject(), otp: ride.otp,distance: ride.distance });
 
         const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
 
@@ -91,12 +91,13 @@ module.exports.confirmRide = async (req, res) => {
                 ...ride.toObject(),
                 otp: ride.otp, // Ensure OTP is included
                 captain: ride.captain, // Ensure captain details are included
+                distance: ride.distance, // Ensure distance is included
             }
         });
 
         return res.status(200).json(ride);
     } catch (err) {
-        console.log(err);
+        console.log("(user.controller.js) error: ",err);
         return res.status(500).json({ message: err.message });
     }
 }
@@ -112,7 +113,7 @@ module.exports.startRide = async (req, res) => {
     try {
         const ride = await rideService.startRide({ rideId, otp, captain: req.captain });
 
-        console.log(ride);
+        console.log("(user.controller.js)Ride : ",ride);
 
         sendMessageToSocketId(ride.user.socketId, {
             event: 'ride-started',

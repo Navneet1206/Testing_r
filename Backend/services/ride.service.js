@@ -28,7 +28,7 @@ async function getFare(pickup, destination) {
         '11-seater': 4
     };
 
-    console.log("Distance & Time Data:", distanceTime); // Debugging
+    console.log("(ride.service.js)Distance & Time Data:", distanceTime); // Debugging
 
     const fare = {
         '4-seater': Math.round(baseFare['4-seater'] + ((distanceTime.distance.value / 1000) * perKmRate['4-seater']) + ((distanceTime.duration.value / 60) * perMinuteRate['4-seater'])),
@@ -36,7 +36,7 @@ async function getFare(pickup, destination) {
         '11-seater': Math.round(baseFare['11-seater'] + ((distanceTime.distance.value / 1000) * perKmRate['11-seater']) + ((distanceTime.duration.value / 60) * perMinuteRate['11-seater']))
     };
 
-    console.log("Calculated Fare:", fare); // Debugging
+    console.log("(ride.service.js)Calculated Fare:", fare); // Debugging
     return fare;
 }
 
