@@ -38,7 +38,7 @@ const VehiclePanel = (props) => {
                 <h2 className='text-lg font-semibold'>₹{props.fare['7-seater']}</h2>
             </div>
 
-            {/* 11-Seater
+            {/* 11-Seater */}
             <div onClick={() => {
                 props.setConfirmRidePanel(true);
                 props.selectVehicle('11-seater');
@@ -50,7 +50,7 @@ const VehiclePanel = (props) => {
                     <p className='text-normal text-xs text-gray-600'>Affordable Mini Bus</p>
                 </div>
                 <h2 className='text-lg font-semibold'>₹{props.fare['11-seater']}</h2>
-            </div> */}
+            </div>
         </div>
     );
 }

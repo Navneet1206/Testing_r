@@ -13,7 +13,7 @@ function initializeSocket(server) {
     });
 
     io.on('connection', (socket) => {
-        console.log(`(socket.js)Client connected: ${socket.id}`);
+        console.log(`Client connected: ${socket.id}`);
 
         // Handle user/captain joining
         socket.on('join', async (data) => {
@@ -57,7 +57,7 @@ function initializeSocket(server) {
 
         // Handle client disconnection
         socket.on('disconnect', async () => {
-            console.log(`(socket.js)Client disconnected: ${socket.id}`);
+            console.log(`Client disconnected: ${socket.id}`);
             try {
                 // Remove socketId from the captain or user document
                 await captainModel.findOneAndUpdate({ socketId: socket.id }, { $unset: { socketId: 1 } });
@@ -73,7 +73,7 @@ const sendMessageToSocketId = (socketId, messageObject) => {
     if (io) {
         io.to(socketId).emit(messageObject.event, messageObject.data);
     } else {
-        console.log('(socket.js)Socket.io not initialized.');
+        console.log('Socket.io not initialized.');
     }
 };
 
