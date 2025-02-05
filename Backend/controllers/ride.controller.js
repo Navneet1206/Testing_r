@@ -3,8 +3,10 @@ const { validationResult } = require('express-validator');
 const mapService = require('../services/maps.service');
 const { sendMessageToSocketId } = require('../socket');
 const rideModel = require('../models/ride.model');
-
-
+const userModel = require('../models/user.model');
+const dotenv = require('dotenv');
+const { sendEmail } = require('../services/communication.service');
+dotenv.config();
 // Backend/controllers/ride.controller.js
 module.exports.createRide = async (req, res) => {
     const errors = validationResult(req);
@@ -25,41 +27,36 @@ module.exports.createRide = async (req, res) => {
             fare: fareData[vehicleType]
         });
 
-        // Send email to admin
-        await sendEmailToAdmin(ride);
-        
-        res.status(201).json({ 
-            ...ride.toObject(), 
-            message: "Ride request sent to admin for approval" 
-        });
-
+        // Get user details
+    const user = await userModel.findById(req.user._id);
+    
+    // Send email to admin
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const emailContent = `
+      <h3>New Ride Request</h3>
+      <p>User: ${user.fullname.firstname} ${user.fullname.lastname}</p>
+      <p>Email: ${user.email}</p>
+      <p>Phone: ${user.mobileNumber}</p>
+      <p>Pickup: ${pickup}</p>
+      <p>Destination: ${destination}</p>
+      <p>Vehicle Type: ${vehicleType}</p>
+      <p>Fare: ₹${fareData[vehicleType]}</p>
+    `;
+    
+    await sendEmail(adminEmail, 'New Ride Request', emailContent);
+    
+    res.status(201).json({ 
+      message: "Ride request sent to admin for approval",
+      ride
+    });
     } catch (err) {
         console.error('Error creating ride:', err);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
 
-async function sendEmailToAdmin(ride) {
-    const adminEmail = process.env.ADMIN_EMAIL;
-    const user = await userModel.findById(ride.user);
-    
-    const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: adminEmail,
-        subject: 'New Ride Request',
-        html: `
-            <h3>New Ride Request Received</h3>
-            <p>User: ${user.fullname.firstname} ${user.fullname.lastname}</p>
-            <p>Pickup: ${ride.pickup}</p>
-            <p>Destination: ${ride.destination}</p>
-            <p>Vehicle Type: ${ride.vehicleType}</p>
-            <p>Fare: ₹${ride.fare}</p>
-        `
-    };
-    
-    await transporter.sendMail(mailOptions);
-}
 
+ 
 
 
 module.exports.getFare = async (req, res) => {

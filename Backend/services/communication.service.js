@@ -36,3 +36,13 @@ module.exports.sendSMSOTP = async (mobileNumber, otp) => {
       to: mobileNumber,
     });
   }; 
+
+module.exports.sendEmail = async (to, subject, html) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to,
+    subject,
+    html
+  };
+  await transporter.sendMail(mailOptions);
+};
