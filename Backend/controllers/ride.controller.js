@@ -5,6 +5,7 @@ const { sendMessageToSocketId } = require('../socket');
 const rideModel = require('../models/ride.model');
 
 
+// Backend/controllers/ride.controller.js
 module.exports.createRide = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -15,46 +16,49 @@ module.exports.createRide = async (req, res) => {
 
     try {
         const fareData = await rideService.getFare(pickup, destination);
-        console.log("Fare Data:", fareData); // Debugging
-
-        if (!fareData[vehicleType]) {
-            console.error("Invalid vehicle type or missing fare:", vehicleType);
-            return res.status(400).json({ message: "Invalid vehicle type or fare calculation issue" });
-        }
-
+        
         const ride = await rideService.createRide({
             user: req.user._id,
             pickup,
             destination,
             vehicleType,
-            fare: fareData[vehicleType] // Ensure fare is passed
+            fare: fareData[vehicleType]
         });
 
-        res.status(201).json({ ...ride.toObject(), otp: ride.otp });
-
-        const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
-
-        const captainsInRadius = await mapService.getCaptainsInTheRadius(
-            pickupCoordinates.ltd,
-            pickupCoordinates.lng,
-            2 // Radius in kilometers
-        );
-
-        const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate('user');
-
-        captainsInRadius.forEach((captain) => {
-            if (captain.socketId) {
-                sendMessageToSocketId(captain.socketId, {
-                    event: 'new-ride',
-                    data: rideWithUser,
-                });
-            }
+        // Send email to admin
+        await sendEmailToAdmin(ride);
+        
+        res.status(201).json({ 
+            ...ride.toObject(), 
+            message: "Ride request sent to admin for approval" 
         });
+
     } catch (err) {
         console.error('Error creating ride:', err);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+async function sendEmailToAdmin(ride) {
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const user = await userModel.findById(ride.user);
+    
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: adminEmail,
+        subject: 'New Ride Request',
+        html: `
+            <h3>New Ride Request Received</h3>
+            <p>User: ${user.fullname.firstname} ${user.fullname.lastname}</p>
+            <p>Pickup: ${ride.pickup}</p>
+            <p>Destination: ${ride.destination}</p>
+            <p>Vehicle Type: ${ride.vehicleType}</p>
+            <p>Fare: ₹${ride.fare}</p>
+        `
+    };
+    
+    await transporter.sendMail(mailOptions);
+}
 
 
 
