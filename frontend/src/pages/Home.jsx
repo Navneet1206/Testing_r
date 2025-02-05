@@ -7,8 +7,6 @@
     import LocationSearchPanel from '../components/LocationSearchPanel';
     import VehiclePanel from '../components/VehiclePanel';
     import ConfirmRide from '../components/ConfirmRide';
-    import LookingForDriver from '../components/LookingForDriver';
-    import WaitingForDriver from '../components/WaitingForDriver';
     import { SocketContext } from '../context/SocketContext';
     import { UserDataContext } from '../context/UserContext';
     import { useNavigate } from 'react-router-dom';
@@ -37,8 +35,7 @@
         const [ride, setRide] = useState(null);
         const [sourceCoords, setSourceCoords] = useState(null);
         const [destinationCoords, setDestinationCoords] = useState(null);
-        const [showRideDetailsPopup, setShowRideDetailsPopup] = useState(false); // State to control popup visibility
-
+       
         const navigate = useNavigate();
         const { socket } = useContext(SocketContext);
         const { user } = useContext(UserDataContext);
@@ -234,7 +231,6 @@
                     }
                 );
                 setRide(response.data);
-                setShowRideDetailsPopup(true); // Show the popup after ride creation
                 console.log('Ride created:', response.data); // Debugging log
             } catch (error) {
                 console.error('Error creating ride:', error);
@@ -242,7 +238,7 @@
         };
 
         return (
-            <div className='h-screen relative overflow-hidden'>
+            <div className='h-screen relative'>
                 <img className='w-16 absolute left-5 top-5' src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png" alt="" />
                 <div className='h-screen w-screen'>
                     <LiveTracking sourceCoords={sourceCoords} destinationCoords={destinationCoords} />
@@ -333,61 +329,6 @@
                         setVehicleFound={setVehicleFound}
                     />
                 </div>
-                <div ref={vehicleFoundRef} className='fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12'>
-                    <LookingForDriver
-                        createRide={createRide}
-                        pickup={pickup}
-                        destination={destination}
-                        fare={fare}
-                        vehicleType={vehicleType}
-                        setVehicleFound={setVehicleFound}
-                    />
-                </div>
-                <div ref={waitingForDriverRef} className='fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12'>
-                    <WaitingForDriver
-                        ride={ride}
-                        setVehicleFound={setVehicleFound}
-                        setWaitingForDriver={setWaitingForDriver}
-                        waitingForDriver={waitingForDriver}
-                    />
-                </div>
-
-                {/* Ride Details Popup */}
-                {showRideDetailsPopup && ride && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white p-6 rounded-lg w-11/12 max-w-md">
-                            <h2 className="text-2xl font-semibold mb-4">Ride Details</h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <h3 className="text-lg font-medium">Pickup Location</h3>
-                                    <p className="text-sm text-gray-600">{ride.pickup}</p>
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-medium">Destination</h3>
-                                    <p className="text-sm text-gray-600">{ride.destination}</p>
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-medium">Fare</h3>
-                                    <p className="text-sm text-gray-600">₹{ride.fare}</p>
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-medium">Status</h3>
-                                    <p className="text-sm text-gray-600">{ride.status}</p>
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-medium">OTP</h3>
-                                    <p className="text-sm text-gray-600">{ride.otp}</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setShowRideDetailsPopup(false)}
-                                className="mt-4 w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-300"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                )}
             </div>
         );
     };
