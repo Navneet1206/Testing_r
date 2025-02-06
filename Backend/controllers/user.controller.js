@@ -1,7 +1,7 @@
 const userModel = require("../models/user.model");
 const userService = require("../services/user.service");
 const { validationResult } = require("express-validator");
-const blackListTokenModle = require("../models/blackListToken.model");
+const blackListTokenModel = require("../models/blackListToken.model");
 const { generateOTP } = require("../utils/otp.utils");
 const { sendEmailOTP, sendSMSOTP } = require("../services/communication.service");
 
