@@ -7,7 +7,7 @@ let io;
 function initializeSocket(server) {
     io = socketIo(server, {
         cors: {
-            origin: '*',
+            origin: ['*', 'https://testing-r-yyz3.vercel.app/'],
             methods: ['GET', 'POST'],
         },
     });
