@@ -1,27 +1,45 @@
 const axios = require('axios');
 const captainModel = require('../models/captain.model');
 
-module.exports.getAddressCoordinate = async (address) => {
-    const apiKey = process.env.GOMAPPRO_API_KEY;
-    const url = `https://maps.gomaps.pro/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+module.exports.getAddressCoordinate = async (input) => {
+  const apiKey = process.env.GOMAPPRO_API_KEY;
+  if (!apiKey) {
+    throw new Error('GOMAPPRO_API_KEY is not set in the environment');
+  }
 
-    try {
-        const response = await axios.get(url);
-        if (response.data.status === 'OK') {
-            const location = response.data.results[0].geometry.location;
-            return {
-                ltd: location.lat,
-                lng: location.lng,
-                formatted_address: response.data.results[0].formatted_address,
-            };
-        } else {
-            throw new Error('Unable to fetch coordinates');
-        }
-    } catch (error) {
-        console.error(error);
-        throw error;
+  const trimmedInput = input.trim();
+  let url = '';
+  
+  // Check if the input is a lat,lng pair (reverse geocoding)
+  if (/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(trimmedInput)) {
+    // Use reverse geocoding parameter
+    url = `https://maps.gomaps.pro/maps/api/geocode/json?latlng=${encodeURIComponent(trimmedInput)}&key=${apiKey}`;
+  } else {
+    // Use forward geocoding
+    url = `https://maps.gomaps.pro/maps/api/geocode/json?address=${encodeURIComponent(trimmedInput)}&key=${apiKey}`;
+  }
+
+  console.log('[maps.service] Request URL:', url);
+
+  try {
+    const response = await axios.get(url);
+    console.log('[maps.service] API response:', response.data);
+    if (response.data.status === 'OK' && response.data.results.length > 0) {
+      const result = response.data.results[0];
+      return {
+        ltd: result.geometry.location.lat,
+        lng: result.geometry.location.lng,
+        formatted_address: result.formatted_address,
+      };
+    } else {
+      throw new Error(response.data.error_message || 'Unable to fetch coordinates');
     }
+  } catch (error) {
+    console.error('[maps.service] Error:', error.message);
+    throw error;
+  }
 };
+
 
 module.exports.getDistanceTime = async (origin, destination) => {
     if (!origin || !destination) {

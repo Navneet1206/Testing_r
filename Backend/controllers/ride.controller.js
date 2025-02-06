@@ -27,8 +27,6 @@ module.exports.createRide = async (req, res) => {
             fare: fareData[vehicleType]
         });
 
-        res.status(201).json({ message: "Ride created successfully", ride });
-        // Get user details
     const user = await userModel.findById(req.user._id);
     
     // Send email to admin
@@ -146,6 +144,7 @@ module.exports.createRide = async (req, res) => {
       message: "Ride request sent to admin for approval",
       ride
     });
+    
     } catch (err) {
         console.error('Error creating ride:', err);
         return res.status(500).json({ message: 'Internal server error' });
