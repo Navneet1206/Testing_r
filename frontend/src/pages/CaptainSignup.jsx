@@ -34,7 +34,7 @@ const CaptainSignup = () => {
     const { name, value } = e.target;
     if (section === 'vehicle' && name === 'type') {
       // Set capacity based on vehicle type
-      const capacity = value === '4-seater' ? '4' : value === '7-seater' ? '7' : value === '11-seater' ? '11' : '';
+      const capacity = value === '4-seater hatchback' ? '4' : value === '4-seater sedan' ? '4' : value === '7-seater SUV' ? '7' : value === '7-seater MUV' ? '7' : '';
       setFormData((prev) => ({
         ...prev,
         vehicle: {
@@ -280,9 +280,10 @@ const CaptainSignup = () => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-300"
               >
                 <option value="">Select Vehicle Type</option>
-                <option value="4-seater">4 Seater</option>
-                <option value="7-seater">7 Seater</option>
-                <option value="11-seater">11 Seater</option>
+                <option value="4-seater hatchback">Hatchback</option>
+                <option value="4-seater sedan">Sedan</option>
+                <option value="7-seater SUV">SUV</option>
+                <option value="7-seater MUV">MUV</option>
               </select>
               <div className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-500">
                 Capacity: {formData.vehicle.capacity || 'Auto-filled'} Seats

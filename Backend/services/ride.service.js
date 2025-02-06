@@ -11,30 +11,36 @@ async function getFare(pickup, destination) {
     const distanceTime = await mapService.getDistanceTime(pickup, destination);
 
     const baseFare = {
-        '4-seater': 30,
-        '7-seater': 50,
-        '11-seater': 70
+        '4-seater hatchback': 30,
+        '4-seater sedan': 35,
+        '7-seater SUV': 50,
+        '7-seater MUV': 55,
     };
 
     const perKmRate = {
-        '4-seater': 10,
-        '7-seater': 15,
-        '11-seater': 20
+        '4-seater hatchback': 10,
+        '4-seater sedan': 12,
+        '7-seater SUV': 15,
+        '7-seater MUV': 18,
     };
 
     const perMinuteRate = {
-        '4-seater': 2,
-        '7-seater': 3,
-        '11-seater': 4
+        '4-seater hatchback': 2,
+        '4-seater sedan': 2.5,
+        '7-seater SUV': 3,
+        '7-seater MUV': 3.5,
     };
 
     console.log("Distance & Time Data:", distanceTime); // Debugging
 
-    const fare = {
-        '4-seater': Math.round(baseFare['4-seater'] + ((distanceTime.distance.value / 1000) * perKmRate['4-seater']) + ((distanceTime.duration.value / 60) * perMinuteRate['4-seater'])),
-        '7-seater': Math.round(baseFare['7-seater'] + ((distanceTime.distance.value / 1000) * perKmRate['7-seater']) + ((distanceTime.duration.value / 60) * perMinuteRate['7-seater'])),
-        '11-seater': Math.round(baseFare['11-seater'] + ((distanceTime.distance.value / 1000) * perKmRate['11-seater']) + ((distanceTime.duration.value / 60) * perMinuteRate['11-seater']))
-    };
+    const fare = {};
+    for (const type in baseFare) {
+        fare[type] = Math.round(
+            baseFare[type] + 
+            ((distanceTime.distance.value / 1000) * perKmRate[type]) +
+            ((distanceTime.duration.value / 60) * perMinuteRate[type])
+        );
+    }
 
     console.log("Calculated Fare:", fare); // Debugging
     return fare;
@@ -75,12 +81,12 @@ module.exports.createRide = async ({
 }
 
 module.exports.confirmRide = async ({
-    rideId, captain
+    rideId, captain 
 }) => {
     if (!rideId) {
         throw new Error('Ride id is required');
     }
-
+ 
     await rideModel.findOneAndUpdate({
         _id: rideId
     }, {

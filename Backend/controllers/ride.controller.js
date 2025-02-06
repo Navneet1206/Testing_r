@@ -27,6 +27,7 @@ module.exports.createRide = async (req, res) => {
             fare: fareData[vehicleType]
         });
 
+        res.status(201).json({ message: "Ride created successfully", ride });
         // Get user details
     const user = await userModel.findById(req.user._id);
     
