@@ -1,12 +1,15 @@
 const axios = require('axios');
+const https = require('https');
 const captainModel = require('../models/captain.model');
+require('dotenv').config();
 
+// Set up Axios options with a 15-second timeout.
 let axiosOptions = {
   timeout: 15000, // 15-second timeout
 };
-console.log("Hello", typeof window)
+
+// If running in Node (i.e. no window), force IPv4 and set a default User-Agent.
 if (typeof window === 'undefined') {
-  const https = require('https');
   axiosOptions.httpsAgent = new https.Agent({ family: 4 });
   axiosOptions.headers = {
     'User-Agent': 'Mozilla/5.0'
@@ -24,10 +27,12 @@ module.exports.getAddressCoordinate = async (input) => {
   const trimmedInput = input.trim();
   let url = '';
 
-  // Check if the input is a lat,lng pair (reverse geocoding)
+  // Check if the input is a lat,lng pair (reverse geocoding) or an address.
   if (/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(trimmedInput)) {
+    // Reverse geocoding
     url = `https://maps.gomaps.pro/maps/api/geocode/json?latlng=${encodeURIComponent(trimmedInput)}&key=${apiKey}`;
   } else {
+    // Forward geocoding
     url = `https://maps.gomaps.pro/maps/api/geocode/json?address=${encodeURIComponent(trimmedInput)}&key=${apiKey}`;
   }
 
@@ -71,7 +76,7 @@ module.exports.getDistanceTime = async (origin, destination) => {
       throw new Error('Unable to fetch distance and time');
     }
   } catch (err) {
-    console.error(err);
+    console.error('[maps.service] Error in getDistanceTime:', err.message);
     throw err;
   }
 };
@@ -92,7 +97,7 @@ module.exports.getAutoCompleteSuggestions = async (input) => {
       throw new Error('Unable to fetch suggestions');
     }
   } catch (err) {
-    console.error(err);
+    console.error('[maps.service] Error in getAutoCompleteSuggestions:', err.message);
     throw err;
   }
 };
@@ -104,15 +109,15 @@ module.exports.getCaptainsInTheRadius = async (lat, lng, radius) => {
         $near: {
           $geometry: {
             type: 'Point',
-            coordinates: [lng, lat],
+            coordinates: [lng, lat], // GeoJSON format: [longitude, latitude]
           },
-          $maxDistance: radius * 1000,
+          $maxDistance: radius * 1000, // Convert radius (in km) to meters
         },
       },
     });
     return captains;
   } catch (err) {
-    console.error(err);
+    console.error('[maps.service] Error in getCaptainsInTheRadius:', err.message);
     throw new Error('Unable to fetch captains in the radius');
   }
 };
