@@ -58,43 +58,43 @@ module.exports.createRide = async (req, res) => {
               <div class="email-content">
                   <div class="info-row">
                       <span class="info-label">User</span>
-                      <span class="info-value">${user.fullname.firstname} ${user.fullname.lastname}</span>
+                      <span class="info-value">&nbsp;&nbsp;${user.fullname.firstname} ${user.fullname.lastname}</span>
                   </div>
                   <div class="info-row">
                       <span class="info-label">Email</span>
-                      <span class="info-value">${user.email}</span>
+                      <span class="info-value">&nbsp;&nbsp;${user.email}</span>
                   </div>
                   <div class="info-row">
                       <span class="info-label">Phone</span>
-                      <span class="info-value">${user.mobileNumber}</span>
+                      <span class="info-value">&nbsp;&nbsp;${user.mobileNumber}</span>
                   </div>
                   <div class="info-row">
                       <span class="info-label">Pickup</span>
-                      <span class="info-value">${pickup}</span>
+                      <span class="info-value">&nbsp;&nbsp;${pickup}</span>
                   </div>
                   <div class="info-row">
                       <span class="info-label">Destination</span>
-                      <span class="info-value">${destination}</span>
+                      <span class="info-value">&nbsp;&nbsp;${destination}</span>
                   </div>
                   <div class="info-row">
                       <span class="info-label">Date:</span>
-                      <span class="info-value">${rideDate}</span>
+                      <span class="info-value">&nbsp;&nbsp;${rideDate}</span>
                   </div>
                   <div class="info-row">
                       <span class="info-label">Time:</span>
-                      <span class="info-value">${rideTime}</span>
+                      <span class="info-value">&nbsp;&nbsp;${rideTime}</span>
                   </div>
                   <div class="info-row">
                       <span class="info-label">OTP:</span>
-                      <span class="info-value">${ride.otp}</span>
+                      <span class="info-value">&nbsp;&nbsp;${ride.otp}</span>
                   </div>
                   <div class="info-row">
                       <span class="info-label">Vehicle Type</span>
-                      <span class="info-value">${vehicleType}</span>
+                      <span class="info-value">&nbsp;&nbsp;${vehicleType}</span>
                   </div>
                   <div class="fare-row">
                       <span>Fare</span>
-                      <span class="fare-value">₹${fareData[vehicleType]}</span>
+                      <span class="fare-value">&nbsp;&nbsp;₹${fareData[vehicleType]}</span>
                   </div>
               </div>
               <div class="email-footer">Ride Request Confirmation</div>
