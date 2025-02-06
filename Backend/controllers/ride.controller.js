@@ -14,7 +14,7 @@ module.exports.createRide = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { pickup, destination, vehicleType } = req.body;
+    const { pickup, destination, vehicleType, rideDate, rideTime} = req.body;
 
     try {
         const fareData = await rideService.getFare(pickup, destination);
@@ -24,6 +24,8 @@ module.exports.createRide = async (req, res) => {
             pickup,
             destination,
             vehicleType,
+            rideDate,
+            rideTime,
             fare: fareData[vehicleType]
         });
 
@@ -120,6 +122,18 @@ module.exports.createRide = async (req, res) => {
             <div class="info-row">
                 <span class="info-label">Destination</span>
                 <span class="info-value"> &emsp; ${destination}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Date:</span>
+                <span class="info-value"> &emsp; ${rideDate}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Time:</span>
+                <span class="info-value"> &emsp; ${rideTime}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">OTP:</span>
+                <span class="info-value"> &emsp; ${ride.otp}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Vehicle Type</span>

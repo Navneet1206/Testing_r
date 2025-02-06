@@ -1,8 +1,7 @@
 const userModel = require("../models/user.model");
 const userService = require("../services/user.service");
 const { validationResult } = require("express-validator");
-const path = require("path");
-const blackListTokenModel = require(path.resolve(__dirname, "../models/blackListToken.model.js"));
+const blackListTokenModel = require("../models/blackListToken.model");
 const { generateOTP } = require("../utils/otp.utils");
 const { sendEmailOTP, sendSMSOTP } = require("../services/communication.service");
 
@@ -202,4 +201,3 @@ module.exports.logoutUser = async (req, res, next) => {
   console.log("User logged out successfully");
   return res.status(200).json({ message: "Logged out" });
 };
-

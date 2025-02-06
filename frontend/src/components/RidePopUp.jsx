@@ -38,6 +38,7 @@ const RidePopUp = (props) => {
                         </div>
                     </div>
                 </div>
+               
                 <div className='mt-5 w-full '>
                     <button onClick={() => {
                         props.setConfirmRidePopupPanel(true)
