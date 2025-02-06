@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import 'remixicon/fonts/remixicon.css';
 import LocationSearchPanel from '../components/LocationSearchPanel';
@@ -34,6 +34,9 @@ const Home = () => {
   const navigate = useNavigate();
   const { socket } = useContext(SocketContext);
   const { user } = useContext(UserDataContext);
+  
+  // Ref for bottom panel for auto scrolling
+  const bottomPanelRef = useRef(null);
 
   useEffect(() => {
     socket.emit('join', { userType: 'user', userId: user._id });
@@ -51,6 +54,13 @@ const Home = () => {
       socket.off('ride-started', handleRideStarted);
     };
   }, [socket, navigate]);
+
+  // Auto scroll when any bottom panel becomes visible.
+  useEffect(() => {
+    if (vehiclePanel || confirmRidePanel || rideConfirmed) {
+      bottomPanelRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [vehiclePanel, confirmRidePanel, rideConfirmed]);
 
   const handlePickupChange = async (e) => {
     const inputValue = e.target.value;
@@ -256,18 +266,18 @@ const Home = () => {
           >
             Find Trip
           </button>
-          <button
+          {/* <button
             type="button"
             onClick={() => setActiveField(null)}
             className="bg-red-600 text-white px-4 py-2 rounded-lg mt-3 w-full"
           >
             Close Suggestions
-          </button>
+          </button> */}
         </form>
       </div>
 
       {/* Section 3: Bottom Panels (min 40vh) */}
-      <div style={{ minHeight: '40vh' }} className="p-6">
+      <div ref={bottomPanelRef} style={{ minHeight: '40vh' }} className="p-6">
         {vehiclePanel && (
           <div className="mb-3">
             <VehiclePanel
