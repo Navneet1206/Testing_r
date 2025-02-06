@@ -206,27 +206,40 @@ const Home = () => {
               type="text"
               placeholder="Add a pick-up location"
             />
-            <button
-              type="button"
-              onClick={async () => {
-                if (navigator.geolocation) {
-                  navigator.geolocation.getCurrentPosition(async (position) => {
-                    const { latitude, longitude } = position.coords;
-                    const response = await axios.get(
-                      `${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`,
-                      {
-                        params: { address: `${latitude},${longitude}` },
-                        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-                      }
-                    );
-                    setPickup(response.data.formatted_address);
-                  });
-                }
-              }}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-black"
-            >
-              <FaLocationArrow className="text-xl" />
-            </button>
+          <button
+  type="button"
+  onClick={async () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const response = await axios.get(
+              `${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`,
+              {
+                params: { address: `${latitude},${longitude}` },
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+              }
+            );
+            setPickup(response.data.formatted_address);
+          } catch (error) {
+            console.error('Error fetching coordinates:', error);
+          }
+        },
+        (error) => {
+          console.error('Error getting geolocation:', error.message);
+          alert('Unable to access your current location. Please enable location services.');
+        }
+      );
+    } else {
+      alert('Geolocation is not supported by this browser.');
+    }
+  }}
+  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-black"
+>
+  <FaLocationArrow className="text-xl" />
+</button>
+
             {activeField === 'pickup' && pickupSuggestions.length > 0 && (
               <LocationSearchPanel
                 suggestions={pickupSuggestions}
