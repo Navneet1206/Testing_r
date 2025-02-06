@@ -100,12 +100,16 @@ const CaptainHome = () => {
       }
     
       if (error) {
-        return <div>Error: {error}</div>;
+        return <div>
+            Error: {error}
+            <h1 className='text-4xl ml-9 text-red-600'>Reload the website again Please!</h1>
+             </div>;
       }
     
       if (!captain) {
         return <div>No captain data found. Please log in again.</div>;
       }
+     
     return (
         <div className='h-screen flex flex-col overflow-hidden'> 
             <div className='fixed p-4 top-0 flex items-center justify-between w-full bg-white shadow-md z-50'>
@@ -120,7 +124,6 @@ const CaptainHome = () => {
                 <div className='flex-1 h-1/5 p-0'>
                     <LiveTracking 
                         sourceCoords={captain.location}
-                        destinationCoords={captain.location}
                     />
                 </div>
                 <div className='h-1/5 pr-6 pl-6 overflow-y-scroll bg-white'>

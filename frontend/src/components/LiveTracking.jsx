@@ -1,14 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { SocketContext } from '../context/SocketContext';
-import { FaExpand, FaCompress, FaExchangeAlt } from 'react-icons/fa';
 
-const LiveTracking = ({ 
-    sourceCoords, 
-    destinationCoords,
-    isFullScreen = false,
-    onToggleFullScreen,
-    onTogglePosition 
-}) => {
+const LiveTracking = ({ sourceCoords, destinationCoords }) => {
     const [currentPosition, setCurrentPosition] = useState({ lat: -33.8688, lng: 151.2195 });
     const [map, setMap] = useState(null);
     const [marker, setMarker] = useState(null);
@@ -100,23 +93,7 @@ const LiveTracking = ({
         };
     }, [socket]);
 
-    return (
-        <div 
-        className='fixed inset-0 z-[1000] w-40 h-40 rounded-lg shadow-lg overflow-hidden'   
-        onClick={onToggleFullScreen}
-        >
-            <div 
-                id="map" 
-                style={{ width: '100%', height: '100%' }}
-                className="absolute top-0 left-0 z-30"
-            />
-            <div 
-                className="absolute top-2 right-2 z-10 flex space-x-2"
-                onClick={(e) => e.stopPropagation()}
-            >
-            </div>
-        </div>
-    );
+    return <div id="map" style={{ width: '100%', height: '80%' }} className='z-10'></div>;
 };
 
 export default LiveTracking;

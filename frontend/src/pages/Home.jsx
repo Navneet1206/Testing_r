@@ -1,336 +1,307 @@
+import React, { useContext, useEffect, useState } from 'react';
+import axios from 'axios';
+import 'remixicon/fonts/remixicon.css';
+import LocationSearchPanel from '../components/LocationSearchPanel';
+import VehiclePanel from '../components/VehiclePanel';
+import ConfirmRide from '../components/ConfirmRide';
+import { SocketContext } from '../context/SocketContext';
+import { UserDataContext } from '../context/UserContext';
+import { useNavigate } from 'react-router-dom';
+import LiveTracking from '../components/LiveTracking';
+import { FaLocationArrow } from 'react-icons/fa';
 
-    import React, { useContext, useEffect, useRef, useState } from 'react';
-    import { useGSAP } from '@gsap/react';
-    import gsap from 'gsap';
-    import axios from 'axios';
-    import 'remixicon/fonts/remixicon.css';
-    import LocationSearchPanel from '../components/LocationSearchPanel';
-    import VehiclePanel from '../components/VehiclePanel';
-    import ConfirmRide from '../components/ConfirmRide';
-    import { SocketContext } from '../context/SocketContext';
-    import { UserDataContext } from '../context/UserContext';
-    import { useNavigate } from 'react-router-dom';
-    import LiveTracking from '../components/LiveTracking';
-    import { FaLocationArrow } from 'react-icons/fa';
+const Home = () => {
+  // Input and suggestion state
+  const [pickup, setPickup] = useState('');
+  const [destination, setDestination] = useState('');
+  const [pickupSuggestions, setPickupSuggestions] = useState([]);
+  const [destinationSuggestions, setDestinationSuggestions] = useState([]);
+  const [activeField, setActiveField] = useState(null);
 
-    const Home = () => {
-        const [pickup, setPickup] = useState('');
-        const [destination, setDestination] = useState('');
-        const [panelOpen, setPanelOpen] = useState(false);
-        const vehiclePanelRef = useRef(null);
-        const confirmRidePanelRef = useRef(null);
-        const vehicleFoundRef = useRef(null);
-        const waitingForDriverRef = useRef(null);
-        const panelRef = useRef(null);
-        const panelCloseRef = useRef(null);
-        const [vehiclePanel, setVehiclePanel] = useState(false);
-        const [confirmRidePanel, setConfirmRidePanel] = useState(false);
-        const [vehicleFound, setVehicleFound] = useState(false);
-        const [waitingForDriver, setWaitingForDriver] = useState(false);
-        const [pickupSuggestions, setPickupSuggestions] = useState([]);
-        const [destinationSuggestions, setDestinationSuggestions] = useState([]);
-        const [activeField, setActiveField] = useState(null);
-        const [fare, setFare] = useState({});
-        const [vehicleType, setVehicleType] = useState(null);
-        const [ride, setRide] = useState(null);
-        const [sourceCoords, setSourceCoords] = useState(null);
-        const [destinationCoords, setDestinationCoords] = useState(null);
-       
-        const navigate = useNavigate();
-        const { socket } = useContext(SocketContext);
-        const { user } = useContext(UserDataContext);
+  // Other state variables
+  const [fare, setFare] = useState({});
+  const [vehicleType, setVehicleType] = useState(null);
+  const [ride, setRide] = useState(null);
+  const [sourceCoords, setSourceCoords] = useState(null);
+  const [destinationCoords, setDestinationCoords] = useState(null);
 
-        useEffect(() => {
-            socket.emit('join', { userType: 'user', userId: user._id });
-        }, [user]);
+  // Flow control states
+  const [vehiclePanel, setVehiclePanel] = useState(false);
+  const [confirmRidePanel, setConfirmRidePanel] = useState(false);
+  const [rideConfirmed, setRideConfirmed] = useState(false);
+  const [confirmSubmitting, setConfirmSubmitting] = useState(false);
 
-        useEffect(() => {
-            const handleRideConfirmed = (ride) => {
-                console.log('Ride confirmed:', ride); // Debugging log
-                setVehicleFound(false);
-                setWaitingForDriver(true);
-                setRide(ride);
-            };
+  const navigate = useNavigate();
+  const { socket } = useContext(SocketContext);
+  const { user } = useContext(UserDataContext);
 
-            const handleRideStarted = (ride) => {
-                console.log('Ride started:', ride); // Debugging log
-                setWaitingForDriver(false);
-                navigate('/riding', { state: { ride } });
-            };
+  useEffect(() => {
+    socket.emit('join', { userType: 'user', userId: user._id });
+  }, [user, socket]);
 
-            socket.on('ride-confirmed', handleRideConfirmed);
-            socket.on('ride-started', handleRideStarted);
-
-            return () => {
-                socket.off('ride-confirmed', handleRideConfirmed);
-                socket.off('ride-started', handleRideStarted);
-            };
-        }, [socket, navigate]);
-
-        const handlePickupChange = async (e) => {
-            const inputValue = e.target.value;
-            setPickup(inputValue);
-
-            if (inputValue.length >= 3) {
-                try {
-                    const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
-                        params: { input: inputValue },
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        },
-                    });
-                    setPickupSuggestions(response.data);
-                } catch (error) {
-                    console.error('Error fetching suggestions:', error);
-                }
-            } else {
-                setPickupSuggestions([]);
-            }
-        };
-
-        const handleDestinationChange = async (e) => {
-            const inputValue = e.target.value;
-            setDestination(inputValue);
-
-            if (inputValue.length >= 3) {
-                try {
-                    const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
-                        params: { input: inputValue },
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        },
-                    });
-                    setDestinationSuggestions(response.data);
-                } catch (error) {
-                    console.error('Error fetching suggestions:', error);
-                }
-            } else {
-                setDestinationSuggestions([]);
-            }
-        };
-
-        const submitHandler = (e) => {
-            e.preventDefault();
-        };
-
-        useGSAP(() => {
-            if (panelOpen && panelRef.current) {
-                gsap.to(panelRef.current, {
-                    height: '70%',
-                    padding: 24,
-                });
-                gsap.to(panelCloseRef.current, {
-                    opacity: 1,
-                });
-            } else if (panelRef.current) {
-                gsap.to(panelRef.current, {
-                    height: '0%',
-                    padding: 0,
-                });
-                gsap.to(panelCloseRef.current, {
-                    opacity: 0,
-                });
-            }
-        }, [panelOpen]);
-
-        useGSAP(() => {
-            if (vehiclePanel && vehiclePanelRef.current) {
-                gsap.to(vehiclePanelRef.current, {
-                    transform: 'translateY(0)',
-                });
-            } else if (vehiclePanelRef.current) {
-                gsap.to(vehiclePanelRef.current, {
-                    transform: 'translateY(100%)',
-                });
-            }
-        }, [vehiclePanel]);
-
-        useGSAP(() => {
-            if (confirmRidePanel && confirmRidePanelRef.current) {
-                gsap.to(confirmRidePanelRef.current, {
-                    transform: 'translateY(0)',
-                });
-            } else if (confirmRidePanelRef.current) {
-                gsap.to(confirmRidePanelRef.current, {
-                    transform: 'translateY(100%)',
-                });
-            }
-        }, [confirmRidePanel]);
-
-        useGSAP(() => {
-            if (vehicleFound && vehicleFoundRef.current) {
-                gsap.to(vehicleFoundRef.current, {
-                    transform: 'translateY(0)',
-                });
-            } else if (vehicleFoundRef.current) {
-                gsap.to(vehicleFoundRef.current, {
-                    transform: 'translateY(100%)',
-                });
-            }
-        }, [vehicleFound]);
-
-        useGSAP(() => {
-            if (waitingForDriver && waitingForDriverRef.current) {
-                gsap.to(waitingForDriverRef.current, {
-                    transform: 'translateY(0)',
-                });
-            } else if (waitingForDriverRef.current) {
-                gsap.to(waitingForDriverRef.current, {
-                    transform: 'translateY(100%)',
-                });
-            }
-        }, [waitingForDriver]);
-
-        const findTrip = async () => {
-            setVehiclePanel(true);
-            setPanelOpen(false);
-
-            try {
-                const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/rides/get-fare`, {
-                    params: { pickup, destination },
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                });
-                setFare(response.data);
-
-                const sourceResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`, {
-                    params: { address: pickup },
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                });
-
-                const destinationResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`, {
-                    params: { address: destination },
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                });
-
-                setSourceCoords(sourceResponse.data);
-                setDestinationCoords(destinationResponse.data);
-            } catch (error) {
-                console.error('Error fetching fare or coordinates:', error);
-            }
-        };
-
-        const createRide = async () => {
-            try {
-                const response = await axios.post(
-                    `${import.meta.env.VITE_BASE_URL}/rides/create`,
-                    {
-                        pickup,
-                        destination,
-                        vehicleType,
-                    },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        },
-                    }
-                );
-                setRide(response.data);
-                console.log('Ride created:', response.data); // Debugging log
-            } catch (error) {
-                console.error('Error creating ride:', error);
-            }
-        };
-
-        return (
-            <div className='h-screen relative'>
-                <img className='w-16 absolute left-5 top-5' src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png" alt="" />
-                <div className='h-screen w-screen'>
-                    <LiveTracking sourceCoords={sourceCoords} destinationCoords={destinationCoords} />
-                </div>
-                <div className='flex flex-col justify-end h-screen absolute top-0 w-full'>
-                    <div className='h-[30%] p-6 bg-white relative'>
-                        <h4 className='text-2xl font-semibold'>Find a trip</h4>
-                        <form className='relative py-3' onSubmit={submitHandler}>
-                            <div className="line absolute h-16 w-1 top-[50%] -translate-y-1/2 left-5 bg-gray-700 rounded-full"></div>
-                            <div className="relative">
-                                <input
-                                    onClick={() => {
-                                        setPanelOpen(true);
-                                        setActiveField('pickup');
-                                    }}
-                                    value={pickup}
-                                    onChange={handlePickupChange}
-                                    className='bg-[#eee] px-12 py-2 text-lg rounded-lg w-full'
-                                    type="text"
-                                    placeholder='Add a pick-up location'
-                                />
-                                <button
-                                    onClick={async () => {
-                                        if (navigator.geolocation) {
-                                            navigator.geolocation.getCurrentPosition(async (position) => {
-                                                const { latitude, longitude } = position.coords;
-                                                const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`, {
-                                                    params: { address: `${latitude},${longitude}` },
-                                                    headers: {
-                                                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                                                    },
-                                                });
-                                                setPickup(response.data.formatted_address);
-                                            });
-                                        }
-                                    }}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-black"
-                                >
-                                    <FaLocationArrow className="text-xl" />
-                                </button>
-                            </div>
-                            <input
-                                onClick={() => {
-                                    setPanelOpen(true);
-                                    setActiveField('destination');
-                                }}
-                                value={destination}
-                                onChange={handleDestinationChange}
-                                className='bg-[#eee] px-12 py-2 text-lg rounded-lg w-full mt-3'
-                                type="text"
-                                placeholder='Enter your destination'
-                            />
-                        </form>
-                        <button onClick={findTrip} className='bg-black text-white px-4 py-2 rounded-lg mt-3 w-full '>
-                            Find Trip
-                        </button>
-                        <button onClick={() => setPanelOpen(false)} className='bg-red-600 text-white px-4 py-2 rounded-lg mt-3 w-full'>
-                            Close
-                        </button>
-                    </div>
-                    <div ref={panelRef} className='bg-white h-0'>
-                        <LocationSearchPanel
-                            suggestions={activeField === 'pickup' ? pickupSuggestions : destinationSuggestions}
-                            setPanelOpen={setPanelOpen}
-                            setVehiclePanel={setVehiclePanel}
-                            setPickup={setPickup}
-                            setDestination={setDestination}
-                            activeField={activeField}
-                        />
-                    </div>
-                </div>
-                <div ref={vehiclePanelRef} className='fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-10 pt-12'>
-                    <VehiclePanel
-                        selectVehicle={setVehicleType}
-                        fare={fare}
-                        setConfirmRidePanel={setConfirmRidePanel}
-                        setVehiclePanel={setVehiclePanel}
-                    />
-                </div>
-                <div ref={confirmRidePanelRef} className='fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12'>
-                    <ConfirmRide
-                        createRide={createRide}
-                        pickup={pickup}
-                        destination={destination}
-                        fare={fare}
-                        vehicleType={vehicleType}
-                        setConfirmRidePanel={setConfirmRidePanel}
-                        setVehicleFound={setVehicleFound}
-                    />
-                </div>
-            </div>
-        );
+  // Listen for ride started event
+  useEffect(() => {
+    const handleRideStarted = (ride) => {
+      console.log('Ride started:', ride);
+      navigate('/riding', { state: { ride } });
     };
 
-    export default Home;
+    socket.on('ride-started', handleRideStarted);
+    return () => {
+      socket.off('ride-started', handleRideStarted);
+    };
+  }, [socket, navigate]);
+
+  const handlePickupChange = async (e) => {
+    const inputValue = e.target.value;
+    setPickup(inputValue);
+    if (inputValue.length >= 3) {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`,
+          {
+            params: { input: inputValue },
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          }
+        );
+        setPickupSuggestions(response.data);
+      } catch (error) {
+        console.error('Error fetching pickup suggestions:', error);
+      }
+    } else {
+      setPickupSuggestions([]);
+    }
+  };
+
+  const handleDestinationChange = async (e) => {
+    const inputValue = e.target.value;
+    setDestination(inputValue);
+    if (inputValue.length >= 3) {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`,
+          {
+            params: { input: inputValue },
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          }
+        );
+        setDestinationSuggestions(response.data);
+      } catch (error) {
+        console.error('Error fetching destination suggestions:', error);
+      }
+    } else {
+      setDestinationSuggestions([]);
+    }
+  };
+
+  const submitHandler = (e) => {
+    e.preventDefault();
+  };
+
+  // Called when "Find Trip" is clicked
+  const findTrip = async () => {
+    // Hide any suggestion dropdown
+    setActiveField(null);
+    // Show vehicle selection panel
+    setVehiclePanel(true);
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/rides/get-fare`,
+        {
+          params: { pickup, destination },
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        }
+      );
+      setFare(response.data);
+
+      const sourceResponse = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`,
+        {
+          params: { address: pickup },
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        }
+      );
+      const destinationResponse = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`,
+        {
+          params: { address: destination },
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        }
+      );
+      setSourceCoords(sourceResponse.data);
+      setDestinationCoords(destinationResponse.data);
+    } catch (error) {
+      console.error('Error fetching fare or coordinates:', error);
+    }
+  };
+
+  // Called when ride is confirmed in ConfirmRide
+  const handleConfirmRide = async () => {
+    if (confirmSubmitting) return;
+    setConfirmSubmitting(true);
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/rides/create`,
+        { pickup, destination, vehicleType },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );
+      setRide(response.data);
+      console.log('Ride created:', response.data);
+      // Hide panels; show congratulations message
+      setConfirmRidePanel(false);
+      setVehiclePanel(false);
+      setRideConfirmed(true);
+    } catch (error) {
+      console.error('Error creating ride:', error);
+    } finally {
+      setConfirmSubmitting(false);
+    }
+  };
+
+  // Reset flow for a new ride
+  const resetFlow = () => {
+    setPickup('');
+    setDestination('');
+    setPickupSuggestions([]);
+    setDestinationSuggestions([]);
+    setActiveField(null);
+    setFare({});
+    setVehicleType(null);
+    setRide(null);
+    setSourceCoords(null);
+    setDestinationCoords(null);
+    setVehiclePanel(false);
+    setConfirmRidePanel(false);
+    setRideConfirmed(false);
+  };
+
+  return (
+    <div className="min-h-screen overflow-y-auto">
+      {/* Section 1: Live Tracking (50vh) */}
+      <div style={{ height: '50vh' }}>
+        <LiveTracking sourceCoords={sourceCoords} destinationCoords={destinationCoords} />
+      </div>
+
+      {/* Section 2: Input Form (30vh) */}
+      <div style={{ height: '30vh' }} className="p-6 bg-white relative">
+        <h4 className="text-2xl font-semibold mb-3">Find a trip</h4>
+        <form className="relative pb-3" onSubmit={submitHandler}>
+          {/* Pickup Input */}
+          <div className="relative mb-3">
+            <input
+              onClick={() => setActiveField('pickup')}
+              value={pickup}
+              onChange={handlePickupChange}
+              className="bg-[#eee] px-12 py-2 text-lg rounded-lg w-full"
+              type="text"
+              placeholder="Add a pick-up location"
+            />
+            <button
+              type="button"
+              onClick={async () => {
+                if (navigator.geolocation) {
+                  navigator.geolocation.getCurrentPosition(async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    const response = await axios.get(
+                      `${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`,
+                      {
+                        params: { address: `${latitude},${longitude}` },
+                        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                      }
+                    );
+                    setPickup(response.data.formatted_address);
+                  });
+                }
+              }}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-black"
+            >
+              <FaLocationArrow className="text-xl" />
+            </button>
+            {activeField === 'pickup' && pickupSuggestions.length > 0 && (
+              <LocationSearchPanel
+                suggestions={pickupSuggestions}
+                onSelect={(suggestion) => {
+                  setPickup(suggestion);
+                  setActiveField(null);
+                }}
+              />
+            )}
+          </div>
+
+          {/* Destination Input */}
+          <div className="relative mb-3">
+            <input
+              onClick={() => setActiveField('destination')}
+              value={destination}
+              onChange={handleDestinationChange}
+              className="bg-[#eee] px-12 py-2 text-lg rounded-lg w-full"
+              type="text"
+              placeholder="Enter your destination"
+            />
+            {activeField === 'destination' && destinationSuggestions.length > 0 && (
+              <LocationSearchPanel
+                suggestions={destinationSuggestions}
+                onSelect={(suggestion) => {
+                  setDestination(suggestion);
+                  setActiveField(null);
+                }}
+              />
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={findTrip}
+            className="bg-black text-white px-4 py-2 rounded-lg mt-3 w-full"
+          >
+            Find Trip
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveField(null)}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg mt-3 w-full"
+          >
+            Close Suggestions
+          </button>
+        </form>
+      </div>
+
+      {/* Section 3: Bottom Panels (min 40vh) */}
+      <div style={{ minHeight: '40vh' }} className="p-6">
+        {vehiclePanel && (
+          <div className="mb-3">
+            <VehiclePanel
+              selectVehicle={setVehicleType}
+              fare={fare}
+              setConfirmRidePanel={setConfirmRidePanel}
+              setVehiclePanel={setVehiclePanel}
+            />
+          </div>
+        )}
+        {confirmRidePanel && (
+          <div className="mb-3">
+            <ConfirmRide
+              onConfirmRide={handleConfirmRide}
+              pickup={pickup}
+              destination={destination}
+              fare={fare}
+              vehicleType={vehicleType}
+              buttonDisabled={confirmSubmitting || rideConfirmed}
+            />
+          </div>
+        )}
+        {rideConfirmed && (
+          <div className="bg-green-100 p-6 rounded-lg text-center z-50">
+            <h2 className="text-3xl font-bold mb-4">Congratulations!</h2>
+            <p className="mb-4">Your ride has been confirmed.</p>
+            <button onClick={resetFlow} className="bg-green-600 text-white px-4 py-2 rounded-lg">
+              OK
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Home;

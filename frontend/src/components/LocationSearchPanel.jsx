@@ -1,54 +1,23 @@
-import React, { useState, useCallback } from 'react'
+import React from 'react';
 
-const LocationSearchPanel = ({ 
-    suggestions, 
-    setVehiclePanel, 
-    setPanelOpen, 
-    setPickup, 
-    setDestination, 
-    activeField 
-}) => {
-    const [isPanelVisible, setIsPanelVisible] = useState(true);
+const LocationSearchPanel = ({ suggestions, onSelect }) => {
+  return (
+    <div className="absolute left-0 right-0 bg-white border rounded shadow mt-1 max-h-60 overflow-y-auto z-50">
+      {suggestions.length > 0 ? (
+        suggestions.map((suggestion, index) => (
+          <div
+            key={index}
+            className="p-2 hover:bg-gray-200 cursor-pointer"
+            onClick={() => onSelect(suggestion)}
+          >
+            {suggestion}
+          </div>
+        ))
+      ) : (
+        <div className="p-2 text-gray-500">No suggestions available</div>
+      )}
+    </div>
+  );
+};
 
-    const handleSuggestionClick = useCallback((suggestion) => {
-        // Set pickup or destination
-        if (activeField === 'pickup') {
-            setPickup(suggestion)
-        } else if (activeField === 'destination') {
-            setDestination(suggestion)
-        }
-        
-        // Hide panel after 1 second
-        setTimeout(() => {
-            setIsPanelVisible(false);
-
-            // Unhide panel after 3 seconds
-            setTimeout(() => {
-                setIsPanelVisible(true);
-            }, 4000);
-        }, 1000);
-    }, [activeField, setPickup, setDestination]);
-
-    return (
-        <>
-            {isPanelVisible && (
-                <div className='absolute top-70 left-0 w-full p-4 z-50'>
-                    {suggestions.map((elem, idx) => (
-                        <div 
-                            key={idx} 
-                            onClick={() => handleSuggestionClick(elem)} 
-                            className='flex gap-4 border-2 p-3 border-gray-50 active:border-black rounded-xl items-center my-2 justify-start z-50'
-                        >
-                            <h2 className='bg-[#eee] h-8 flex items-center justify-center w-12 rounded-full'>
-                                <i className="ri-map-pin-fill"></i>
-                            </h2>
-                            <h4 className='font-medium'>{elem}</h4>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </>
-    )
-}
-
-export default LocationSearchPanel
+export default LocationSearchPanel;
