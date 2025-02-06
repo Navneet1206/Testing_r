@@ -10,6 +10,8 @@ router.post('/create',
     body('pickup').isString().isLength({ min: 3 }).withMessage('Invalid pickup address'),
     body('destination').isString().isLength({ min: 3 }).withMessage('Invalid destination address'),
     body('vehicleType').isString().isIn(['4-seater hatchback', '4-seater sedan', '7-seater SUV', '7-seater MUV']).withMessage('Invalid vehicle type'),
+    body('rideDate').isString().notEmpty().withMessage('Ride date is required'),
+    body('rideTime').isString().notEmpty().withMessage('Ride time is required'),
     rideController.createRide
 )
 
