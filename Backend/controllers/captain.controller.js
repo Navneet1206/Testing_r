@@ -1,7 +1,8 @@
 const captainModel = require("../models/captain.model");
 const captainService = require("../services/captain.service");
 const { validationResult } = require("express-validator");
-const blackListTokenModel = require("../models/blackListToken.model");
+const path = require("path");
+const blackListTokenModel = require(path.resolve(__dirname, "../models/blackListToken.model.js"));
 const { generateOTP } = require("../utils/otp.utils");
 const { sendEmailOTP, sendSMSOTP } = require("../services/communication.service");
 const rideModel = require("../models/ride.model");
