@@ -17,6 +17,7 @@ import CaptainRiding from './pages/CaptainRiding';
 import 'remixicon/fonts/remixicon.css';
 import VerifyEmailOTP from './pages/VerifyEmailOTP';
 import VerifyMobileOTP from './pages/VerifyMobileOTP';
+import AdminDashboard from './pages/AdminDashboard'; 
 
 const App = () => {
   return (
@@ -29,6 +30,7 @@ const App = () => {
         <Route path="/captain-signup" element={<CaptainSignup />} />
         <Route path="/verify-email-otp" element={<VerifyEmailOTP />} />
         <Route path="/verify-mobile-otp" element={<VerifyMobileOTP />} />
+        <Route path="/admin-hubhaimere-sepanga-matlena" element={<AdminDashboard />} /> 
         <Route
           path="/home"
           element={

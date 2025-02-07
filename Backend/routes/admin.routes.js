@@ -1,9 +1,21 @@
-
 const express = require('express');
 const router = express.Router();
 const rideModel = require('../models/ride.model');
+const captainModel = require('../models/captain.model');
 const { sendMessageToSocketId } = require('../socket');
 const { sendEmail } = require('../services/communication.service');
+
+// Get all rides
+router.get('/rides', async (req, res) => {
+    try {
+        const rides = await rideModel.find()
+            .populate('user', 'fullname email mobileNumber')
+            .populate('captain', 'fullname email');
+        res.status(200).json(rides);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 
 // Get pending rides
 router.get('/rides/pending', async (req, res) => {
@@ -49,19 +61,67 @@ router.post('/rides/:id/assign', async (req, res) => {
             .populate('user captain');
         
         const captain = await captainModel.findById(req.body.captainId);
-        
+        if (!captain) return res.status(404).json({ message: 'Captain not found' });
+
         ride.captain = req.body.captainId;
         ride.status = 'assigned';
         await ride.save();
 
         // Send emails
         await sendEmail(ride.user.email, 'Ride Assigned', 
-            `Your ride has been assigned to captain ${captain.fullname.firstname}`);
+            `Your ride has been assigned to Captain ${captain.fullname}`);
         
         await sendEmail(captain.email, 'New Ride Assignment', 
-            `You have been assigned a new ride. Details: ${ride.pickup} to ${ride.destination}`);
+            `You have been assigned a new ride. Details: Pickup - ${ride.pickup}, Destination - ${ride.destination}`);
+
+        // Notify via socket (if applicable)
+        sendMessageToSocketId(captain.socketId, 'ride-assigned', ride);
 
         res.status(200).json(ride);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// End ride
+router.post('/rides/:id/end', async (req, res) => {
+    try {
+        const ride = await rideModel.findById(req.params.id);
+        if (!ride) return res.status(404).json({ message: 'Ride not found' });
+
+        ride.status = 'completed';
+        await ride.save();
+
+        // Notify user and captain
+        await sendEmail(ride.user.email, 'Ride Completed', 'Your ride has been successfully completed.');
+        if (ride.captain) {
+            await sendEmail(ride.captain.email, 'Ride Completed', 'The ride you were assigned has been marked as completed.');
+        }
+
+        res.status(200).json({ message: 'Ride ended successfully', ride });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Cancel ride
+router.post('/rides/:id/cancel', async (req, res) => {
+    try {
+        const ride = await rideModel.findById(req.params.id)
+            .populate('user captain');
+        if (!ride) return res.status(404).json({ message: 'Ride not found' });
+
+        ride.status = 'cancelled';
+        ride.cancellationReason = req.body.reason || 'Cancelled by admin';
+        await ride.save();
+
+        // Notify user and captain
+        await sendEmail(ride.user.email, 'Ride Cancelled', 'Your ride has been cancelled.');
+        if (ride.captain) {
+            await sendEmail(ride.captain.email, 'Ride Cancelled', 'The ride assigned to you has been cancelled.');
+        }
+
+        res.status(200).json({ message: 'Ride cancelled successfully', ride });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
