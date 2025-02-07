@@ -1,25 +1,18 @@
 import React, { useRef, useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import CaptainDetails from '../components/CaptainDetails';
-import RidePopUp from '../components/RidePopUp';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
-import ConfirmRidePopUp from '../components/ConfirmRidePopUp';
 import { SocketContext } from '../context/SocketContext';
 import { CaptainDataContext } from '../context/CapatainContext';
 import axios from 'axios';
 import LiveTracking from '../components/LiveTracking';
 
 const CaptainHome = () => {
-    const [ridePopupPanel, setRidePopupPanel] = useState(false);
-    const [confirmRidePopupPanel, setConfirmRidePopupPanel] = useState(false);
-    const ridePopupPanelRef = useRef(null);
-    const confirmRidePopupPanelRef = useRef(null);
-    const [ride, setRide] = useState(null);
 
     const { socket } = useContext(SocketContext);
     const { captain, isLoading, error } = useContext(CaptainDataContext);
 
+    
     useEffect(() => {
         socket.emit('join', {
             userId: captain._id,
@@ -58,43 +51,6 @@ const CaptainHome = () => {
         };
     }, []);
 
-    const confirmRide = async () => {
-        const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/confirm`, {
-            rideId: ride._id,
-            captainId: captain._id,
-        }, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-        });
-
-        setRidePopupPanel(false);
-        setConfirmRidePopupPanel(true);
-    };
-
-    useGSAP(() => {
-        if (ridePopupPanel) {
-            gsap.to(ridePopupPanelRef.current, {
-                transform: 'translateY(0)',
-            });
-        } else {
-            gsap.to(ridePopupPanelRef.current, {
-                transform: 'translateY(100%)',
-            });
-        }
-    }, [ridePopupPanel]);
-
-    useGSAP(() => {
-        if (confirmRidePopupPanel) {
-            gsap.to(confirmRidePopupPanelRef.current, {
-                transform: 'translateY(0)',
-            });
-        } else {
-            gsap.to(confirmRidePopupPanelRef.current, {
-                transform: 'translateY(100%)',
-            });
-        }
-    }, [confirmRidePopupPanel]);
     if (isLoading) {
         return <div>Loading captain data...</div>;
       }
@@ -121,29 +77,11 @@ const CaptainHome = () => {
                 </Link>
             </div>
             <div className='flex-1 flex flex-col mt-16'>
-                <div className='flex-1 h-1/5 p-0'>
-                    <LiveTracking 
-                        sourceCoords={captain.location}
-                    />
-                </div>
-                <div className='h-1/5 pr-6 pl-6 overflow-y-scroll bg-white'>
-                    <CaptainDetails />
-                </div>
+                {/* All Notification of latest Div {Newest first ride} */}
+       
             </div>
-            <div ref={ridePopupPanelRef} className='fixed w-full z-10 bottom-0 transform translate-y-full bg-white px-3 py-10 pt-12 shadow-lg'>
-                <RidePopUp
-                    ride={ride}
-                    setRidePopupPanel={setRidePopupPanel}
-                    setConfirmRidePopupPanel={setConfirmRidePopupPanel}
-                    confirmRide={confirmRide}
-                />
-            </div>
-            <div ref={confirmRidePopupPanelRef} className='fixed w-full h-screen z-10 bottom-0 transform translate-y-full bg-white px-3 py-10 pt-12 shadow-lg'>
-                <ConfirmRidePopUp
-                    ride={ride}
-                    setConfirmRidePopupPanel={setConfirmRidePopupPanel}
-                    setRidePopupPanel={setRidePopupPanel}
-                />
+            <div className='flex-1 flex flex-col mt-16'>
+                {/* All Notification of latest Div {Newest first ride} */}
             </div>
         </div>
     );
