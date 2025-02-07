@@ -3,94 +3,147 @@ import { SocketContext } from "../context/SocketContext";
 import axios from "axios";
 
 const CaptainHome = () => {
-    const [rides, setRides] = useState([]); // ✅ Always initialize as an array
-  const { socket } = useContext(SocketContext); // ✅ Use socket from context
+  const [rides, setRides] = useState([]);
+  const { socket } = useContext(SocketContext);
+
+  const baseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:3000';
 
   const fetchRides = async () => {
     try {
-      const res = await axios.get("/rides/captain/all");
-  
+      const res = await axios.get(`${baseUrl}/rides/captain/all`);
       if (Array.isArray(res.data)) {
-        setRides(res.data); // ✅ Set only if data is an array
+        // Changed sort order to show newest first
+        const sortedRides = res.data.sort((a, b) => new Date(b.rideDate) - new Date(a.rideDate));
+        setRides(sortedRides);        
       } else {
         console.error("Unexpected response format:", res.data);
-        setRides([]); // ✅ Fallback to empty array
+        setRides([]);
       }
     } catch (error) {
-      console.error("Error fetching rides", error);
-      setRides([]); // ✅ Prevents crashes by setting empty array
+      console.error("Error fetching rides:", error);
+      setRides([]);
     }
   };
+
+  const getTimeAgo = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   
+    if (diffDays === 0) return "Abhi ka hai 🚀";
+    if (diffDays === 1) return "1 din Baad";
+    if (diffDays < 30) return `${diffDays} din Baad`;
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)} mahine Baad`;
+    return `${Math.floor(diffDays / 365)} saal Baad`;
+  };
 
   useEffect(() => {
     fetchRides();
 
-    if (!socket) return; // ✅ Prevents 'socket.on is not a function' error
+    if (!socket) return;
 
-    // ✅ Listen for new ride updates
     socket.on("new-ride", (newRide) => {
-      setRides((prevRides) => [newRide, ...prevRides]); // Add new ride at top
+      // Changed to add new rides at the beginning of the array
+      setRides((prevRides) => [newRide, ...prevRides]);
     });
 
     return () => {
-      socket.off("new-ride"); // Cleanup on unmount
+      socket.off("new-ride");
     };
-  }, [socket]); // ✅ Run only when `socket` is ready
+  }, [socket]);
+
+  const getStatusBadge = (status) => {
+    const statusStyles = {
+      pending: "bg-yellow-500",
+      assigned: "bg-orange-500",
+      ongoing: "bg-blue-500",
+      completed: "bg-green-500",
+      canceled: "bg-red-500",
+    };
+
+    return (
+      <span className={`${statusStyles[status] || 'bg-gray-500'} text-white px-3 py-1 rounded-full text-sm font-medium`}>
+        {status}
+      </span>
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-5">
-      <h1 className="text-2xl font-bold text-center mb-5">🚖 Available Rides</h1>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">🚖 Available Rides</h1>
+          <button 
+            onClick={fetchRides} 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2"
+          >
+            <span>🔄</span>
+            Refresh
+          </button>
+        </div>
 
-      {/* Refresh Button */}
-      <div className="flex justify-center mb-4">
-        <button 
-          onClick={fetchRides} 
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition"
-        >
-          🔄 Refresh Rides
-        </button>
-      </div>
-
-      {/* Ride List */}
-      <div className="max-w-4xl mx-auto">
         {rides.length === 0 ? (
-          <p className="text-center text-gray-500">No rides available.</p>
+          <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+            <p className="text-gray-500 text-lg">No rides available at the moment.</p>
+          </div>
         ) : (
-            <ul>
-            {Array.isArray(rides) && rides.length > 0 ? (
-              rides.map((ride) => (
-                <li key={ride.rideId} className="border p-4 mt-2">
-                  <p><b>Pickup:</b> {ride.pickup}</p>
-                  <p><b>Destination:</b> {ride.destination}</p>
-                  <p><b>Fare:</b> ₹{ride.fare}</p>
-                  <p><b>Date:</b> {ride.rideDate} - {ride.rideTime}</p>
-                  <p><b>Status:</b> <span className={`badge ${ride.status}`}>{ride.status}</span></p>
-                  <p><b>Admin Email:</b> {ride.adminEmail}</p>
-                  <p><b>Admin Phone:</b> {ride.adminPhone}</p>
-                </li>
-              ))
-            ) : (
-              <p className="text-center text-gray-500">No rides available.</p>
-            )}
-          </ul>
-          
+          <div className="grid gap-4">
+            {rides.map((ride) => (
+              <div 
+                key={ride.rideId} 
+                className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-200"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-600">📍</span>
+                      <div>
+                        <p className="text-sm text-gray-500">Pickup</p>
+                        <p className="font-medium text-gray-800">{ride.pickup}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-600">🎯</span>
+                      <div>
+                        <p className="text-sm text-gray-500">Destination</p>
+                        <p className="font-medium text-gray-800">{ride.destination}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-gray-800">₹{ride.fare}</p>
+                    {getStatusBadge(ride.status)}
+                  </div>
+                </div>
+                
+                <div className="border-t pt-4 mt-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Date & Time</p>
+                      <p className="font-medium text-gray-800">
+                        {new Date(ride.rideDate).toLocaleDateString()} - {ride.rideTime}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">{getTimeAgo(ride.rideDate)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Contact Details</p>
+                      <p className="font-medium text-gray-800">
+                        📧 {ride.adminEmail || "rajvl132011@gmail.com"}
+                      </p>
+                      <p className="font-medium text-gray-800">
+                        📱 {ride.adminPhone || "+91 8435061006"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
   );
-};
-
-// Function to return status color
-const getStatusColor = (status) => {
-  switch (status) {
-    case "pending": return "bg-yellow-500 text-white";
-    case "assigned": return "bg-orange-500 text-white";
-    case "ongoing": return "bg-blue-500 text-white";
-    case "completed": return "bg-green-500 text-white";
-    case "canceled": return "bg-red-500 text-white";
-    default: return "bg-gray-500 text-white";
-  }
 };
 
 export default CaptainHome;
