@@ -14,6 +14,8 @@ router.post('/create',
     body('rideTime').isString().notEmpty().withMessage('Ride time is required'),
     rideController.createRide
 )
+router.get('/captain/all', rideController.getAllRidesForCaptains);
+
 
 router.get('/get-fare',
     authMiddleware.authUser,

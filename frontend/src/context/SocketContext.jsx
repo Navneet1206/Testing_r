@@ -1,23 +1,28 @@
-import React, { createContext, useEffect } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
 export const SocketContext = createContext();
 
-const socket = io(`${import.meta.env.VITE_BASE_URL}`);
+export const SocketProvider = ({ children }) => {
+    const [socket, setSocket] = useState(null);
 
-const SocketProvider = ({ children }) => {
     useEffect(() => {
-        socket.on('connect', () => {
-            console.log('Connected to server');
+        const newSocket = io(import.meta.env.VITE_BASE_URL, {
+            transports: ["websocket"], // ✅ Use WebSocket for stable connection
+            reconnection: true,        // ✅ Auto-reconnect if disconnected
         });
 
-        socket.on('disconnect', () => {
-            console.log('Disconnected from server');
+        setSocket(newSocket);
+
+        newSocket.on("connect", () => {
+            console.log("✅ Connected to server");
         });
 
-        return () => {
-            socket.disconnect();
-        };
+        newSocket.on("disconnect", () => {
+            console.log("❌ Disconnected from server");
+        });
+
+        return () => newSocket.disconnect();
     }, []);
 
     return (
