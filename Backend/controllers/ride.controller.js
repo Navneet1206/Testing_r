@@ -33,6 +33,7 @@ module.exports.createRide = async (req, res) => {
         rideTime,
         paymentType,
         fare: fareData[vehicleType],
+        captain: null,
         status: "pending"
       });
   
@@ -123,6 +124,16 @@ module.exports.createRide = async (req, res) => {
                         <span class="info-label">Vehicle Type</span>
                         <span class="info-value">&nbsp;&nbsp;${vehicleType}</span>
                     </div>
+                    <div class="info-row">
+                        <span class="info-label"><strong>Payment Type:</strong></span>
+                        <span class="info-value">&nbsp;&nbsp;<p> ${ride.paymentType}</p></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label"><strong>Payment Status:</strong></span>
+                        <span class="info-value">&nbsp;&nbsp;
+                       <p class="status"> ${isPaymentDone ? "Done ✅" : "Not Done ❌"}</p>
+                        </span>
+                    </div>
                     <div class="fare-row">
                         <span>Fare</span>
                         <span class="fare-value">&nbsp;&nbsp;₹${fareData[vehicleType]}</span>
@@ -146,7 +157,7 @@ module.exports.createRide = async (req, res) => {
       console.error('Error creating ride:', err);
       return res.status(500).json({ message: 'Internal server error' });
     }
-  };
+};
 
 module.exports.getFare = async (req, res) => {
     const errors = validationResult(req);
@@ -168,9 +179,11 @@ module.exports.confirmRide = async (req, res) => {
     const { rideId, paymentType, paymentDetails } = req.body;
   
     try {
-      const ride = await Ride.findById(rideId).populate("user");
+      const ride = await rideModel.findById(rideId).populate("user");
       if (!ride) return res.status(404).json({ message: "Ride not found" });
-  
+
+      let isPaymentDone = false;
+
       if (paymentType === "cash") {
         ride.isPaymentDone = false;
         ride.paymentType = "cash";
@@ -181,29 +194,58 @@ module.exports.confirmRide = async (req, res) => {
           paymentDetails.orderId,
           paymentDetails.transactionId
         );
-  
+
         ride.isPaymentDone = true;
         ride.paymentType = "online";
         await ride.save();
+        isPaymentDone = true;
       } else {
         return res.status(400).json({ message: "Invalid payment type" });
       }
-  
-      // 📧 Send Confirmation Email
+
+      // 📧 Send Confirmation Email to User and Admin
       const emailContent = `
-        <p>Your ride has been confirmed.</p>
-        <p>Payment Status: ${ride.isPaymentDone ? "Done" : "Not Done"}</p>
-        <p>Amount: ₹${ride.fare}</p>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; }
+            .container { width: 100%; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+            .header { background: #4CAF50; color: white; padding: 10px; text-align: center; font-size: 20px; }
+            .details { margin: 20px 0; }
+            .details p { margin: 5px 0; }
+            .status { font-size: 18px; font-weight: bold; color: ${isPaymentDone ? "green" : "red"}; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">Ride Confirmation</div>
+            <div class="details">
+              <p><strong>User:</strong> ${ride.user.fullname.firstname} ${ride.user.fullname.lastname}</p>
+              <p><strong>Email:</strong> ${ride.user.email}</p>
+              <p><strong>Pickup:</strong> ${ride.pickup}</p>
+              <p><strong>Destination:</strong> ${ride.destination}</p>
+              <p><strong>Ride Date:</strong> ${ride.rideDate}</p>
+              <p><strong>Ride Time:</strong> ${ride.rideTime}</p>
+              <p><strong>Vehicle Type:</strong> ${ride.vehicleType}</p>
+              <p><strong>Fare:</strong> ₹${ride.fare}</p>
+              <p><strong>Payment Type:</strong> ${ride.paymentType}</p>
+              <p class="status"><strong>Payment Status:</strong> ${isPaymentDone ? "Done ✅" : "Not Done ❌"}</p>
+            </div>
+          </div>
+        </body>
+        </html>
       `;
+
       await sendEmail(ride.user.email, "Ride Confirmation", emailContent);
       await sendEmail(process.env.ADMIN_EMAIL, "New Ride Payment", emailContent);
-  
+
       res.status(200).json({ message: "Ride confirmed successfully", ride });
     } catch (error) {
       console.error("Error confirming ride:", error);
       res.status(500).json({ message: "Error confirming ride" });
     }
-  };
+};
+
   
 
 module.exports.startRide = async (req, res) => {

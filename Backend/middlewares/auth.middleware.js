@@ -39,37 +39,39 @@ module.exports.authUser = async (req, res, next) => {
 }
 
 module.exports.authCaptain = async (req, res, next) => {
-    const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
-  
-    if (!token) {
+  const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+
+  if (!token) {
       console.log('No token provided');
       return res.status(401).json({ message: 'Unauthorized: No token provided' });
-    }
-  
-    const isBlacklisted = await blackListTokenModel.findOne({ token });
-    if (isBlacklisted) {
+  }
+
+  const isBlacklisted = await blackListTokenModel.findOne({ token });
+  if (isBlacklisted) {
       console.log('Token is blacklisted');
       return res.status(401).json({ message: 'Unauthorized: Token is blacklisted' });
-    }
-  
-    try {
+  }
+
+  try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log('Decoded token:', decoded); // Log decoded token for debugging
-  
+      console.log('Decoded token:', decoded);
+
       const captain = await captainModel.findById(decoded._id);
-      console.log('Fetched captain:', captain); // Log fetched captain
-  
+
+      // ✅ Fix: Captain null hone par error mat bhejo
       if (!captain) {
-        console.log('Captain not found in the database');
-        return res.status(404).json({ message: 'Captain not found' });
+          console.log('No captain found, proceeding without error.');
+          req.captain = null;
+      } else {
+          req.captain = captain;
       }
-  
-      req.captain = captain; // Attach captain to request object
+
       next();
-    } catch (err) {
+  } catch (err) {
       console.error('Error in authCaptain middleware:', err);
       return res.status(401).json({ message: 'Unauthorized: Invalid token' });
-    }
-  };
+  }
+};
+
   
   

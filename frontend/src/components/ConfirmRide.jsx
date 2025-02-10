@@ -12,6 +12,7 @@ const ConfirmRide = (props) => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const baseUrl = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+  const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY; // ✅ Load Razorpay Key from .env
 
   const handleConfirmRide = async () => {
     if (!rideDate || !rideTime) {
@@ -48,7 +49,7 @@ const ConfirmRide = (props) => {
 
         // 🚀 Razorpay Checkout
         const options = {
-          key: "YOUR_RAZORPAY_KEY",
+          key: razorpayKey,
           amount: data.amount,
           currency: data.currency,
           order_id: data.id,
