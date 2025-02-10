@@ -20,12 +20,12 @@ const razorpay = new Razorpay({
 });
 
 /**
- * Endpoint: Initiate Payment Order for Online Payment
- * This endpoint calculates the fare and creates a Razorpay order.
+ * Initiate Payment Order (for online payment)
+ * Calculates fare and creates a Razorpay order.
  */
 module.exports.initiatePaymentOrder = async (req, res) => {
   const errors = validationResult(req);
-  if(!errors.isEmpty()){
+  if (!errors.isEmpty()){
     return res.status(400).json({ errors: errors.array() });
   }
   
@@ -42,7 +42,6 @@ module.exports.initiatePaymentOrder = async (req, res) => {
     
     const order = await razorpay.orders.create(options);
     
-    // Return order details along with fare and ride details for frontend processing.
     res.status(200).json({
       order,
       fare: amount,
@@ -55,23 +54,21 @@ module.exports.initiatePaymentOrder = async (req, res) => {
 };
 
 /**
- * Endpoint: Confirm Online Payment and Create Ride
- * Call this after the frontend completes payment using Razorpay.
- * It creates the ride (with payment marked as done), logs a payment transaction, and sends email notifications.
+ * Confirm Online Payment and Create Ride
+ * Called after successful payment on the frontend.
  */
 module.exports.confirmOnlineRide = async (req, res) => {
   const errors = validationResult(req);
-  if(!errors.isEmpty()){
+  if (!errors.isEmpty()){
     return res.status(400).json({ errors: errors.array() });
   }
   
-  // Expected fields: razorpay_payment_id, razorpay_order_id, pickup, destination, vehicleType, rideDate, rideTime
   const { razorpay_payment_id, razorpay_order_id, pickup, destination, vehicleType, rideDate, rideTime } = req.body;
   try {
     const fareData = await rideService.getFare(pickup, destination);
     const fare = fareData[vehicleType];
     
-    // Create ride with online payment details (payment is completed)
+    // Create ride with online payment details.
     const ride = await rideService.createRide({
       user: req.user._id,
       pickup,
@@ -85,7 +82,7 @@ module.exports.confirmOnlineRide = async (req, res) => {
       isPaymentDone: true,
     });
     
-    // Log the payment transaction
+    // Log the payment transaction.
     await PaymentTransaction.create({
       ride: ride._id,
       user: req.user._id,
@@ -96,7 +93,7 @@ module.exports.confirmOnlineRide = async (req, res) => {
       paymentStatus: "done",
     });
     
-    // Notify all captains via socket
+    // Notify captains via socket.
     const adminEmail = process.env.ADMIN_EMAIL;
     const adminPhone = process.env.ADMIN_PHONE;
     const captains = await captainModel.find();
@@ -119,7 +116,7 @@ module.exports.confirmOnlineRide = async (req, res) => {
       }
     });
     
-    // Prepare email notification content
+    // Send email notifications.
     const user = await userModel.findById(req.user._id);
     const emailContent = `
       <!DOCTYPE html>
@@ -127,7 +124,7 @@ module.exports.confirmOnlineRide = async (req, res) => {
       <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Ride Request Confirmed (Online Payment)</title>
+          <title>Ride Confirmed (Online Payment)</title>
           <style>
               body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f4f4f4; }
               .email-container { background-color: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
@@ -143,7 +140,7 @@ module.exports.confirmOnlineRide = async (req, res) => {
       </head>
       <body>
           <div class="email-container">
-              <div class="email-header">Ride Request Confirmed (Online Payment)</div>
+              <div class="email-header">Ride Confirmed (Online Payment)</div>
               <div class="email-content">
                   <div class="info-row">
                       <span class="info-label">User</span>
@@ -199,12 +196,12 @@ module.exports.confirmOnlineRide = async (req, res) => {
 };
 
 /**
- * Endpoint: Create Ride for Cash Payment
- * For cash, create the ride immediately with paymentType 'cash' and payment marked as not done.
+ * Create Ride for Cash Payment
+ * Creates a ride with paymentType 'cash' (payment pending) and logs a transaction.
  */
 module.exports.createRideCash = async (req, res) => {
   const errors = validationResult(req);
-  if(!errors.isEmpty()){
+  if (!errors.isEmpty()){
     return res.status(400).json({ errors: errors.array() });
   }
   
@@ -213,7 +210,6 @@ module.exports.createRideCash = async (req, res) => {
     const fareData = await rideService.getFare(pickup, destination);
     const fare = fareData[vehicleType];
     
-    // Create ride with cash payment details
     const ride = await rideService.createRide({
       user: req.user._id,
       pickup,
@@ -227,7 +223,6 @@ module.exports.createRideCash = async (req, res) => {
       isPaymentDone: false,
     });
     
-    // Log the cash payment transaction (payment pending)
     await PaymentTransaction.create({
       ride: ride._id,
       user: req.user._id,
@@ -238,8 +233,6 @@ module.exports.createRideCash = async (req, res) => {
     
     const adminEmail = process.env.ADMIN_EMAIL;
     const adminPhone = process.env.ADMIN_PHONE;
-    
-    // Notify captains via socket
     const captains = await captainModel.find();
     captains.forEach(captain => {
       if (captain.socketId) {
@@ -267,7 +260,7 @@ module.exports.createRideCash = async (req, res) => {
       <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Ride Request Confirmed (Cash Payment)</title>
+          <title>Ride Confirmed (Cash Payment)</title>
           <style>
               body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f4f4f4; }
               .email-container { background-color: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
@@ -283,7 +276,7 @@ module.exports.createRideCash = async (req, res) => {
       </head>
       <body>
           <div class="email-container">
-              <div class="email-header">Ride Request Confirmed (Cash Payment)</div>
+              <div class="email-header">Ride Confirmed (Cash Payment)</div>
               <div class="email-content">
                   <div class="info-row">
                       <span class="info-label">User</span>
@@ -319,7 +312,7 @@ module.exports.createRideCash = async (req, res) => {
                   </div>
                   <div class="info-row">
                       <span class="info-label">Payment</span>
-                      <span class="info-value">Cash (Payment Pending)</span>
+                      <span class="info-value">Cash (Pending)</span>
                   </div>
               </div>
               <div class="email-footer">Ride Request Confirmation</div>
@@ -329,7 +322,7 @@ module.exports.createRideCash = async (req, res) => {
     `;
     
     await sendEmail(adminEmail, 'New Ride Request (Cash Payment)', emailContent);
-    await sendEmail(user.email, 'Ride Request Confirmed', emailContent);
+    await sendEmail(user.email, 'Ride Confirmed (Cash Payment)', emailContent);
     
     res.status(201).json({ message: "Ride created with cash payment", ride });
   } catch (err) {
@@ -338,9 +331,11 @@ module.exports.createRideCash = async (req, res) => {
   }
 };
 
+/* Other endpoints remain unchanged */
+
 module.exports.getFare = async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
+  if (!errors.isEmpty()){
     return res.status(400).json({ errors: errors.array() });
   }
   const { pickup, destination } = req.query;
@@ -354,7 +349,7 @@ module.exports.getFare = async (req, res) => {
 
 module.exports.confirmRide = async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
+  if (!errors.isEmpty()){
     return res.status(400).json({ errors: errors.array() });
   }
   const { rideId } = req.body;
@@ -377,7 +372,7 @@ module.exports.confirmRide = async (req, res) => {
 
 module.exports.startRide = async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
+  if (!errors.isEmpty()){
     return res.status(400).json({ errors: errors.array() });
   }
   const { rideId, otp } = req.query;
@@ -395,7 +390,7 @@ module.exports.startRide = async (req, res) => {
 
 module.exports.endRide = async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
+  if (!errors.isEmpty()){
     return res.status(400).json({ errors: errors.array() });
   }
   const { rideId } = req.body;
@@ -445,7 +440,7 @@ module.exports.getRideById = async (req, res) => {
 module.exports.getAutoCompleteSuggestions = async (req, res, next) => {
   try {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) {
+    if (!errors.isEmpty()){
       return res.status(400).json({ errors: errors.array() });
     }
     const { input } = req.query;

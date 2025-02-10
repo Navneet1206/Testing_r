@@ -12,7 +12,7 @@ const paymentTransactionSchema = new mongoose.Schema({
     required: true,
   },
   transactionId: {
-    type: String, // e.g., Razorpay Payment ID for online payments
+    type: String, // e.g. Razorpay Payment ID (for online payments)
   },
   orderId: {
     type: String, // Razorpay Order ID

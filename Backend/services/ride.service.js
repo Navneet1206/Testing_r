@@ -1,3 +1,4 @@
+// Backend/services/ride.service.js
 const rideModel = require('../models/ride.model');
 const mapService = require('./maps.service');
 const crypto = require('crypto');
@@ -14,7 +15,7 @@ async function getFare(pickup, destination) {
       throw new Error('Invalid response from GoMaps API');
     }
     
-    console.log("Distance & Time Data:", distanceTime); // Debugging
+    console.log("Distance & Time Data:", distanceTime);
 
     const baseFare = { 
       '4-seater hatchback': 30, 
@@ -43,7 +44,7 @@ async function getFare(pickup, destination) {
         ((distanceTime.duration.value / 60) * perMinuteRate[type])
       );
     }
-    console.log("Calculated Fare:", fare); // Debugging
+    console.log("Calculated Fare:", fare);
     return fare;
   } catch (error) {
     console.error('Error in fare calculation:', error.message);
@@ -58,26 +59,39 @@ function getOtp(num) {
   return crypto.randomInt(Math.pow(10, num - 1), Math.pow(10, num)).toString();
 }
 
-module.exports.createRide = async ({
-  user, pickup, destination, vehicleType, rideDate, rideTime
-}) => {
-  // Ensure all required fields are provided
-  if (!user || !pickup || !destination || !vehicleType || !rideDate || !rideTime) {
+/**
+ * Updated createRide function:
+ * Accepts an object that can include additional fields such as status, paymentType, and isPaymentDone.
+ */
+module.exports.createRide = async (rideData) => {
+  if (
+    !rideData.user ||
+    !rideData.pickup ||
+    !rideData.destination ||
+    !rideData.vehicleType ||
+    !rideData.rideDate ||
+    !rideData.rideTime
+  ) {
     throw new Error('All fields are required');
   }
-
-  const fare = await getFare(pickup, destination);
-
+  
+  // If fare is not passed explicitly, calculate it.
+  const fareData = await getFare(rideData.pickup, rideData.destination);
+  const fare = rideData.fare || fareData[rideData.vehicleType];
+  
   const ride = await rideModel.create({
-    user,
-    pickup,
-    destination,
-    rideDate,
-    rideTime,
+    user: rideData.user,
+    pickup: rideData.pickup,
+    destination: rideData.destination,
+    rideDate: rideData.rideDate,
+    rideTime: rideData.rideTime,
     otp: getOtp(6),
-    fare: fare[vehicleType]
+    fare: fare,
+    status: rideData.status || 'pending',
+    paymentType: rideData.paymentType,     // "online" or "cash"
+    isPaymentDone: rideData.isPaymentDone,   // true or false
   });
-
+  
   return ride;
 };
 
