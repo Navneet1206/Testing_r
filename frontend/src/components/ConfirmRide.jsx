@@ -7,6 +7,7 @@ const ConfirmRide = (props) => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showValidationModal, setShowValidationModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('cash');
 
   // Use the environment variable provided by Vite
   const baseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:3000';
@@ -24,7 +25,8 @@ const ConfirmRide = (props) => {
       vehicleType: props.vehicleType,
       fare: props.fare[props.vehicleType],
       rideDate,
-      rideTime
+      rideTime,
+      paymentType: paymentMethod
     };
 
     try {
@@ -105,12 +107,38 @@ const ConfirmRide = (props) => {
             </div>
           </div>
           {/* Fare and Vehicle Type */}
-          <div className="flex items-center gap-5 p-3">
+          <div className="flex items-center gap-5 p-3 border-b-2">
             <i className="ri-currency-line"></i>
             <div>
               <h3 className="text-lg font-medium">₹{props.fare[props.vehicleType]}</h3>
               <p className="text-sm text-gray-600">{props.vehicleType}</p>
-              <p className="text-sm text-gray-600">Cash Payment</p>
+              <p className="text-sm text-gray-600">{paymentMethod === 'cash' ? 'Cash Payment' : 'Online Payment'}</p>
+            </div>
+          </div>
+          {/* Payment Method Selection */}
+          <div className="p-3 border-b-2">
+            <label className="block text-sm font-medium mb-2">Payment Method</label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="payment"
+                  value="cash"
+                  checked={paymentMethod === 'cash'}
+                  onChange={() => setPaymentMethod('cash')}
+                />
+                Cash Payment
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="payment"
+                  value="online"
+                  checked={paymentMethod === 'online'}
+                  onChange={() => setPaymentMethod('online')}
+                />
+                Online Payment
+              </label>
             </div>
           </div>
           {/* Date and Time Input */}

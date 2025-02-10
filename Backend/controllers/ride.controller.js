@@ -16,7 +16,7 @@ module.exports.createRide = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
   
-    const { pickup, destination, vehicleType, rideDate, rideTime } = req.body;
+    const { pickup, destination, vehicleType, rideDate, rideTime,  paymentType} = req.body;
   
     try {
       const fareData = await rideService.getFare(pickup, destination);
@@ -29,7 +29,9 @@ module.exports.createRide = async (req, res) => {
         rideDate,
         rideTime,
         fare: fareData[vehicleType],
-        status: "pending"
+        status: "pending",
+         paymentType,
+        isPaymentDone: paymentType === 'cash'
       });
   
       // ✅ Declare admin variables before using them

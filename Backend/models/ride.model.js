@@ -48,7 +48,15 @@ const rideSchema = new mongoose.Schema({
   signature: {
     type: String,
   },
-
+  paymentType: {
+    type: String,
+    enum: ["online", "cash"],
+    required: true
+  },
+  isPaymentDone: {
+    type: Boolean,
+    default: false
+  },
   otp: {
     type: String,
     select: false,

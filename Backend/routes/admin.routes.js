@@ -126,5 +126,37 @@ router.post('/rides/:id/cancel', async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
-
+router.get('/pending-payments', async (req, res) => {
+    try {
+      const rides = await rideModel.find({ 
+        paymentType: 'online', 
+        isPaymentDone: false 
+      }).populate('user captain');
+      res.status(200).json(rides);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+  
+  router.post('/complete-payment/:rideId', async (req, res) => {
+    try {
+      const ride = await rideModel.findByIdAndUpdate(
+        req.params.rideId,
+        { isPaymentDone: true },
+        { new: true }
+      );
+      res.status(200).json(ride);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+  
+  router.get('/users', async (req, res) => {
+    try {
+      const users = await userModel.find().select('email mobileNumber');
+      res.status(200).json(users);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
 module.exports = router;
