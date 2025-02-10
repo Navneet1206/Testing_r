@@ -3,7 +3,7 @@ const router = express.Router();
 const { body, query } = require('express-validator');
 const rideController = require('../controllers/ride.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
-
+const PaymentTransaction = require("../models/PaymentTransaction.model");
 
 router.post('/create',
     authMiddleware.authUser,
@@ -50,4 +50,14 @@ router.get('/user/history', authMiddleware.authUser, rideController.getUserRideH
 router.get('/captain/history', authMiddleware.authCaptain, rideController.getCaptainRideHistory);
 
 
+router.get("/payment-history", authMiddleware.authUser, async (req, res) => {
+    try {
+      const transactions = await PaymentTransaction.find({ user: req.user._id })
+        .populate("ride", "pickup destination rideDate rideTime fare");
+      res.status(200).json(transactions);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+  
 module.exports = router;
