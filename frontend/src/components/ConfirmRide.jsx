@@ -8,6 +8,8 @@ const ConfirmRide = (props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Use the environment variable provided by Vite
   const baseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:3000';
@@ -30,12 +32,19 @@ const ConfirmRide = (props) => {
     };
 
     try {
-      const response = await axios.post(`${baseUrl}/rides/create`, rideData, {
+      const createResponse = await axios.post(`${baseUrl}/rides/create`, rideData, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
+
+      // Add the confirmation API call
+      const rideId = createResponse.data.ride._id;
+      await axios.post(`${baseUrl}/rides/confirm`, { rideId }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+
       setShowSuccess(true);
       // Call the parent's onRideConfirmed handler with the response data
-      props.onRideConfirmed && props.onRideConfirmed(response.data);
+      props.onRideConfirmed && props.onRideConfirmed(createResponse.data);
       
       // Reset all panels and show only success message (after a brief delay)
       setTimeout(() => {
@@ -43,6 +52,12 @@ const ConfirmRide = (props) => {
       }, 2000);
     } catch (error) {
       console.error('Error confirming ride:', error);
+      const errorMsg = error.response?.data?.message || 
+                      error.response?.data?.error || 
+                      error.message || 
+                      'An unexpected error occurred while confirming your ride';
+      setErrorMessage(errorMsg);
+      setShowErrorModal(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -64,6 +79,24 @@ const ConfirmRide = (props) => {
 
   return (
     <div className="bg-white p-4 rounded-lg shadow relative">
+      {/* Error Modal */}
+      {showErrorModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-sm mx-4">
+            <h3 className="text-xl font-semibold mb-2 text-red-600">Booking Failed</h3>
+            <p className="text-gray-600 mb-4">
+              {errorMessage}
+            </p>
+            <button
+              onClick={() => setShowErrorModal(false)}
+              className="w-full bg-red-600 text-white font-semibold p-2 rounded-lg hover:bg-red-700"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Validation Modal */}
       {showValidationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
