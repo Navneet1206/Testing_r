@@ -16,7 +16,10 @@ module.exports.createRide = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
   
-    const { pickup, destination, vehicleType, rideDate, rideTime } = req.body;
+    const { pickup, destination, vehicleType, rideDate, rideTime, paymentType } = req.body;
+    if (!paymentType) {
+        return res.status(400).json({ message: "Payment type is required (cash/online)" });
+      }
   
     try {
       const fareData = await rideService.getFare(pickup, destination);
@@ -28,6 +31,7 @@ module.exports.createRide = async (req, res) => {
         vehicleType,
         rideDate,
         rideTime,
+        paymentType,
         fare: fareData[vehicleType],
         status: "pending"
       });
@@ -161,31 +165,46 @@ module.exports.getFare = async (req, res) => {
 }
 
 module.exports.confirmRide = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { rideId } = req.body;
-
+    const { rideId, paymentType, paymentDetails } = req.body;
+  
     try {
-        const ride = await rideService.confirmRide({ rideId, captain: req.captain });
-
-        sendMessageToSocketId(ride.user.socketId, {
-            event: 'ride-confirmed',
-            data: {
-                ...ride.toObject(),
-                otp: ride.otp, // Ensure OTP is included
-                captain: ride.captain, // Ensure captain details are included
-            }
-        });
-
-        return res.status(200).json(ride);
-    } catch (err) {
-        console.log(err);
-        return res.status(500).json({ message: err.message });
+      const ride = await Ride.findById(rideId).populate("user");
+      if (!ride) return res.status(404).json({ message: "Ride not found" });
+  
+      if (paymentType === "cash") {
+        ride.isPaymentDone = false;
+        ride.paymentType = "cash";
+        await ride.save();
+      } else if (paymentType === "online") {
+        const result = await paymentService.verifyPayment(
+          rideId,
+          paymentDetails.orderId,
+          paymentDetails.transactionId
+        );
+  
+        ride.isPaymentDone = true;
+        ride.paymentType = "online";
+        await ride.save();
+      } else {
+        return res.status(400).json({ message: "Invalid payment type" });
+      }
+  
+      // 📧 Send Confirmation Email
+      const emailContent = `
+        <p>Your ride has been confirmed.</p>
+        <p>Payment Status: ${ride.isPaymentDone ? "Done" : "Not Done"}</p>
+        <p>Amount: ₹${ride.fare}</p>
+      `;
+      await sendEmail(ride.user.email, "Ride Confirmation", emailContent);
+      await sendEmail(process.env.ADMIN_EMAIL, "New Ride Payment", emailContent);
+  
+      res.status(200).json({ message: "Ride confirmed successfully", ride });
+    } catch (error) {
+      console.error("Error confirming ride:", error);
+      res.status(500).json({ message: "Error confirming ride" });
     }
-}
+  };
+  
 
 module.exports.startRide = async (req, res) => {
     const errors = validationResult(req);
