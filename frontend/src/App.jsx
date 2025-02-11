@@ -23,6 +23,7 @@ import Captains from './pages/admin/Captains';
 import RideManagement from './pages/admin/RideManagement';
 import Payments from './pages/admin/Payments';
 import AdminProtectWrapper from './pages/admin/AdminProtectWrapper';
+import NotFoundPage from './pages/NotFoundPage';
 import 'remixicon/fonts/remixicon.css';
 
 const App = () => {
@@ -140,6 +141,9 @@ const App = () => {
             </AdminProtectWrapper>
           }
         />
+        
+        {/* Fallback Route for 404 and wrong requests */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </div>
   );
