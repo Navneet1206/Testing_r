@@ -201,35 +201,147 @@ module.exports.confirmRide = async (req, res) => {
 
       // 📧 Send Confirmation Email to User and Admin
       const emailContent = `
-        <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; }
-            .container { width: 100%; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
-            .header { background: #4CAF50; color: white; padding: 10px; text-align: center; font-size: 20px; }
-            .details { margin: 20px 0; }
-            .details p { margin: 5px 0; }
-            .status { font-size: 18px; font-weight: bold; color: ${isPaymentDone ? "green" : "red"}; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">Ride Confirmation</div>
-            <div class="details">
-              <p><strong>User:</strong> ${ride.user.fullname.firstname} ${ride.user.fullname.lastname}</p>
-              <p><strong>Email:</strong> ${ride.user.email}</p>
-              <p><strong>Pickup:</strong> ${ride.pickup}</p>
-              <p><strong>Destination:</strong> ${ride.destination}</p>
-              <p><strong>Ride Date:</strong> ${ride.rideDate}</p>
-              <p><strong>Ride Time:</strong> ${ride.rideTime}</p>
-              <p><strong>Vehicle Type:</strong> ${ride.vehicleType}</p>
-              <p><strong>Fare:</strong> ₹${ride.fare}</p>
-              <p><strong>Payment Type:</strong> ${ride.paymentType}</p>
-              <p class="status"><strong>Payment Status:</strong> ${isPaymentDone ? "Done ✅" : "Not Done ❌"}</p>
-            </div>
-          </div>
-        </body>
-        </html>
+      <!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+      color: white;
+      padding: 25px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .content {
+      padding: 30px;
+    }
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .detail-item {
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    .detail-label {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+    .detail-value {
+      color: #333;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    .payment-status {
+      text-align: center;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 8px;
+      background: #f8f9fa;
+    }
+    .status-label {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .status-done {
+      color: #2e7d32;
+    }
+    .status-pending {
+      color: #c62828;
+    }
+    .footer {
+      background: #f8f9fa;
+      padding: 20px;
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>Ride Confirmation</h1>
+    </div>
+    
+    <div class="content">
+      <div class="details-grid">
+        <div class="detail-item">
+          <div class="detail-label">Passenger Name</div>
+          <div class="detail-value">${ride.user.fullname.firstname} ${ride.user.fullname.lastname}</div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">Email</div>
+          <div class="detail-value">${ride.user.email}</div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">Pickup Location</div>
+          <div class="detail-value">${ride.pickup}</div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">Destination</div>
+          <div class="detail-value">${ride.destination}</div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">Date & Time</div>
+          <div class="detail-value">${ride.rideDate} at ${ride.rideTime}</div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">Vehicle Type</div>
+          <div class="detail-value">${ride.vehicleType}</div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">Fare Amount</div>
+          <div class="detail-value">₹${ride.fare}</div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">Payment Method</div>
+          <div class="detail-value">${ride.paymentType}</div>
+        </div>
+      </div>
+      
+      <div class="payment-status">
+        <div class="status-label ${isPaymentDone ? 'status-done' : 'status-pending'}">
+          Payment Status: ${isPaymentDone ? "Done ✅" : "Not Done ❌"}
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer">
+      Thank you for choosing our service!
+    </div>
+  </div>
+</body>
+</html>
       `;
 
       await sendEmail(ride.user.email, "Ride Confirmation", emailContent);
@@ -352,7 +464,7 @@ module.exports.getAllRidesForCaptains = async (req, res) => {
 
         const rides = await rideModel.find({ status: "pending" })
             .select("pickup destination rideDate rideTime fare status createdAt")
-            .sort({ rideDate: 1, rideTime: 1 }); // ✅ Date-wise & time-wise sorting
+            .sort({ rideDate: -1, rideTime: -1, createdAt: -1 }); // ✅ Latest rides first
 
         console.log("✅ Total Pending Rides Fetched:", rides.length);
         res.status(200).json(rides);
@@ -361,4 +473,3 @@ module.exports.getAllRidesForCaptains = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
-

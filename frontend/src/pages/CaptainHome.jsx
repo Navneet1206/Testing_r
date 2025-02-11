@@ -9,12 +9,12 @@ const CaptainHome = () => {
   const baseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:3000';
 
   const fetchRides = async () => {
-    const token = localStorage.getItem("token"); // ✅ Token from localStorage
-    console.log("🔑 Token before API call:", token); // Debugging
+    const token = localStorage.getItem("token"); 
+    console.log("🔑 Token before API call:", token); 
 
     if (!token) {
         console.error("❌ No token found, redirecting to login");
-        return; // Token missing hai to API call mat bhejo
+        return; 
     }
 
     try {
@@ -24,7 +24,11 @@ const CaptainHome = () => {
 
         if (Array.isArray(res.data)) {
             console.log("✅ Total Rides Fetched:", res.data.length);
-            setRides(res.data);
+
+            // ✅ Extra sorting to ensure latest rides are on top
+            const sortedRides = res.data.sort((a, b) => new Date(b.rideDate + " " + b.rideTime) - new Date(a.rideDate + " " + a.rideTime));
+
+            setRides(sortedRides);
         } else {
             console.error("❌ Unexpected API Response:", res.data);
             setRides([]);
@@ -34,6 +38,7 @@ const CaptainHome = () => {
         setRides([]);
     }
 };
+
 
 
 
