@@ -37,30 +37,32 @@ module.exports.createRide = async (req, res) => {
         status: "pending"
       });
   
-      // ✅ Declare admin variables before using them
       const adminEmail = process.env.ADMIN_EMAIL;
-      const adminPhone = process.env.ADMIN_PHONE;
-  
-      // 🛠 Get all captains
-      const captains = await captainModel.find(); // ✅ Get all captains, even offline ones
-      captains.forEach(captain => {
-          if (captain.socketId) {
-            sendMessageToSocketId(captain.socketId, {
-              event: 'new-ride',
-              data: { 
-                  rideId: ride._id,
-                  pickup,
-                  destination,
-                  rideDate,
-                  rideTime,
-                  fare: fareData[vehicleType],
-                  status: "pending",
-                  adminEmail,  // ✅ Now it's declared before usage
-                  adminPhone   // ✅ Now it's declared before usage
-              }
-            });
-          }
-      });
+const adminPhone = process.env.ADMIN_PHONE;
+
+// 🛠 Get all captains
+const captains = await captainModel.find(); 
+captains.forEach(captain => {
+    if (captain.socketId) {
+        console.log(`📢 Sending new-ride event to Captain: ${captain.socketId}`);
+
+        sendMessageToSocketId(captain.socketId, {
+            event: 'new-ride',
+            data: { 
+                rideId: ride._id,
+                pickup,
+                destination,
+                rideDate,
+                rideTime,
+                fare: fareData[vehicleType],
+                status: "pending",
+                adminEmail,  // ✅ Now it's declared before usage
+                adminPhone   // ✅ Now it's declared before usage
+            }
+        });
+    }
+});
+
   
       const user = await userModel.findById(req.user._id);
   
@@ -346,12 +348,17 @@ module.exports.getAutoCompleteSuggestions = async (req, res, next) => {
 
 module.exports.getAllRidesForCaptains = async (req, res) => {
     try {
-      const rides = await rideModel.find().select("pickup destination rideDate rideTime fare status"); // ✅ Fetch rides without user details
-    
-      res.status(200).json(rides);
+        console.log("🚀 Fetching pending rides for captains...");
+
+        const rides = await rideModel.find({ status: "pending" })
+            .select("pickup destination rideDate rideTime fare status createdAt")
+            .sort({ rideDate: 1, rideTime: 1 }); // ✅ Date-wise & time-wise sorting
+
+        console.log("✅ Total Pending Rides Fetched:", rides.length);
+        res.status(200).json(rides);
     } catch (err) {
-      console.error("Error fetching rides:", err);
-      res.status(500).json({ message: "Internal server error" });
+        console.error("❌ Error fetching rides:", err);
+        res.status(500).json({ message: "Internal server error" });
     }
-  };
-  
+};
+

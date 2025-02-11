@@ -23,8 +23,8 @@ const CaptainHome = () => {
         });
 
         if (Array.isArray(res.data)) {
-            console.log("✅ Rides Fetched:", res.data.length);
-            setRides(res.data.sort((a, b) => new Date(b.rideDate) - new Date(a.rideDate)));
+            console.log("✅ Total Rides Fetched:", res.data.length);
+            setRides(res.data);
         } else {
             console.error("❌ Unexpected API Response:", res.data);
             setRides([]);
@@ -34,6 +34,7 @@ const CaptainHome = () => {
         setRides([]);
     }
 };
+
 
 
   const getTimeAgo = (dateString) => {
@@ -50,19 +51,20 @@ const CaptainHome = () => {
   };
 
   useEffect(() => {
-    fetchRides();
+    fetchRides(); // ✅ Fetch rides on mount
 
     if (!socket) return;
 
     socket.on("new-ride", (newRide) => {
-      // Changed to add new rides at the beginning of the array
-      setRides((prevRides) => [newRide, ...prevRides]);
+        console.log("🚀 New Ride Received:", newRide);
+        setRides((prevRides) => [newRide, ...prevRides]); // ✅ Add new ride to top
     });
 
     return () => {
-      socket.off("new-ride");
+        socket.off("new-ride");
     };
-  }, [socket]);
+}, [socket]);
+
 
   const getStatusBadge = (status) => {
     const statusStyles = {
