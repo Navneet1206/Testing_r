@@ -17,7 +17,7 @@ import CaptainRiding from './pages/CaptainRiding';
 import VerifyEmailOTP from './pages/VerifyEmailOTP';
 import VerifyMobileOTP from './pages/VerifyMobileOTP';
 import AdminLogin from './pages/admin/AdminLogin';
-import Dashboard from './pages/admin/Dashboard';
+import Dashboard from './pages/admin/Dashboard.jsx';
 import Users from './pages/admin/Users';
 import Captains from './pages/admin/Captains';
 import RideManagement from './pages/admin/RideManagement';
