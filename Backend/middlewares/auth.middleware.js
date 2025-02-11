@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const blackListTokenModel = require("../models/blackListToken.model");
 const captainModel = require('../models/captain.model');
-
+const Admin = require('../models/admin.model');
 
 module.exports.authUser = async (req, res, next) => {
     const token = req.cookies.token || req.headers.authorization?.split(' ')[ 1 ];
@@ -76,3 +76,19 @@ module.exports.authCaptain = async (req, res, next) => {
 
   
   
+module.exports.authAdmin = async (req, res, next) => {
+    // Admin token usually comes from Authorization header (Bearer token)
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
+    
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const admin = await Admin.findById(decoded._id);
+      if (!admin) return res.status(401).json({ message: "Unauthorized" });
+      
+      req.admin = admin; // Optional: attach admin object to req
+      next();
+    } catch (err) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+  };
