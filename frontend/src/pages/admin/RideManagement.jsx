@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Navbar from "../../components/admin/Navbar";
 
 const RideManagement = () => {
   const [rides, setRides] = useState([]);
@@ -89,7 +90,9 @@ const RideManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <>
+        <Navbar/>
+        <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Ride Management</h1>
         
@@ -174,6 +177,7 @@ const RideManagement = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

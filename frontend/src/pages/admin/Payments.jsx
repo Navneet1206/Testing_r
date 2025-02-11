@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Navbar from "../../components/admin/Navbar";
 
 const Payments = () => {
   const [payments, setPayments] = useState([]);
@@ -17,7 +18,8 @@ const Payments = () => {
     fetchPayments();
   }, []);
 
-  return (
+  return (<> 
+      <Navbar />
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Payments</h1>
       <table className="w-full bg-white shadow-lg rounded">
@@ -41,6 +43,7 @@ const Payments = () => {
         </tbody>
       </table>
     </div>
+  </>
   );
 };
 
