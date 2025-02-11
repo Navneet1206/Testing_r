@@ -128,12 +128,6 @@ module.exports.createRide = async (req, res) => {
                         <span class="info-label"><strong>Payment Type:</strong></span>
                         <span class="info-value">&nbsp;&nbsp;<p> ${ride.paymentType}</p></span>
                     </div>
-                    <div class="info-row">
-                        <span class="info-label"><strong>Payment Status:</strong></span>
-                        <span class="info-value">&nbsp;&nbsp;
-                       <p class="status"> ${isPaymentDone ? "Done ✅" : "Not Done ❌"}</p>
-                        </span>
-                    </div>
                     <div class="fare-row">
                         <span>Fare</span>
                         <span class="fare-value">&nbsp;&nbsp;₹${fareData[vehicleType]}</span>

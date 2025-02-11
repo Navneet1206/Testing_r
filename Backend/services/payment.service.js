@@ -7,6 +7,9 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_SECRET,
 });
 
+console.log("🔑 Razorpay Key ID:", process.env.RAZORPAY_KEY_ID);
+console.log("🔑 Razorpay Secret:", process.env.RAZORPAY_SECRET ? "Loaded ✅" : "Not Loaded ❌");
+
 // ✅ Create Razorpay Order
 module.exports.createOrder = async (amount, rideId) => {
   const options = {
