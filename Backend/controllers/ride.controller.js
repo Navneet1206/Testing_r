@@ -472,4 +472,4 @@ module.exports.getAllRidesForCaptains = async (req, res) => {
         console.error("❌ Error fetching rides:", err);
         res.status(500).json({ message: "Internal server error" });
     }
-};
+}; 
