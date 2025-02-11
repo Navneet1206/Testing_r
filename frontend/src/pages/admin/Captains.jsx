@@ -8,7 +8,7 @@ const Captains = () => {
     const fetchCaptains = async () => {
       try {
         const token = localStorage.getItem("adminToken");
-        const res = await axios.get("/admin-hubhaimere-sepanga-matlena/captains", { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/admin-hubhaimere-sepanga-matlena/captains`, { headers: { Authorization: `Bearer ${token}` } });
         setCaptains(res.data.captains);
       } catch (err) {
         console.error("Error fetching captains:", err);

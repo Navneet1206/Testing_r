@@ -8,7 +8,7 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("adminToken");
-        const res = await axios.get("/admin-hubhaimere-sepanga-matlena/dashboard", { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/admin-hubhaimere-sepanga-matlena/dashboard`, { headers: { Authorization: `Bearer ${token}` } });
         setData(res.data);
       } catch (err) {
         console.error("Error fetching dashboard data:", err);

@@ -8,7 +8,7 @@ const RideManagement = () => {
     const fetchRides = async () => {
       try {
         const token = localStorage.getItem("adminToken");
-        const res = await axios.get("/admin-hubhaimere-sepanga-matlena/rides", { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/admin-hubhaimere-sepanga-matlena/rides`, { headers: { Authorization: `Bearer ${token}` } });
         setRides(res.data.rides);
       } catch (err) {
         console.error("Error fetching rides:", err);
@@ -20,7 +20,7 @@ const RideManagement = () => {
   const updateRideStatus = async (id, status) => {
     try {
       const token = localStorage.getItem("adminToken");
-      await axios.post(`/admin-hubhaimere-sepanga-matlena/rides/${id}/status`, { status }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.post(`${import.meta.env.VITE_BASE_URL}/admin-hubhaimere-sepanga-matlena/rides/${id}/status`, { status }, { headers: { Authorization: `Bearer ${token}` } });
       setRides(rides.map(ride => (ride._id === id ? { ...ride, status } : ride)));
     } catch (err) {
       console.error("Error updating ride status:", err);

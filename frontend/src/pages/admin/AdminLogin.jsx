@@ -10,7 +10,7 @@ const AdminLogin = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("/admin-hubhaimere-sepanga-matlena/login", { email, password });
+      const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/admin-hubhaimere-sepanga-matlena/login`, { email, password });
       localStorage.setItem("adminToken", res.data.token);
       navigate("/admin/dashboard");
     } catch (err) {

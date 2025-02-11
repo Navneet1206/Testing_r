@@ -8,7 +8,7 @@ const Users = () => {
     const fetchUsers = async () => {
       try {
         const token = localStorage.getItem("adminToken");
-        const res = await axios.get("/admin-hubhaimere-sepanga-matlena/users", { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/admin-hubhaimere-sepanga-matlena/users`, { headers: { Authorization: `Bearer ${token}` } });
         setUsers(res.data.users);
       } catch (err) {
         console.error("Error fetching users:", err);
@@ -20,7 +20,7 @@ const Users = () => {
   const toggleBlockUser = async (id, status) => {
     try {
       const token = localStorage.getItem("adminToken");
-      await axios.post(`/admin-hubhaimere-sepanga-matlena/${status === "blocked" ? "unblock" : "block"}-user/${id}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.post(`${import.meta.env.VITE_BASE_URL}/admin-hubhaimere-sepanga-matlena/${status === "blocked" ? "unblock" : "block"}-user/${id}`, {}, { headers: { Authorization: `Bearer ${token}` } });
       setUsers(users.map(user => (user._id === id ? { ...user, status: status === "blocked" ? "active" : "blocked" } : user)));
     } catch (err) {
       console.error("Error toggling user status:", err);

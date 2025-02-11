@@ -8,7 +8,7 @@ const Payments = () => {
     const fetchPayments = async () => {
       try {
         const token = localStorage.getItem("adminToken");
-        const res = await axios.get("/admin-hubhaimere-sepanga-matlena/payments", { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/admin-hubhaimere-sepanga-matlena/payments`, { headers: { Authorization: `Bearer ${token}` } });
         setPayments(res.data.payments);
       } catch (err) {
         console.error("Error fetching payments:", err);
