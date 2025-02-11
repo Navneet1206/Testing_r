@@ -10,7 +10,7 @@ const captainRoutes = require('./routes/captain.routes');
 const mapsRoutes = require('./routes/maps.routes');
 const rideRoutes = require('./routes/ride.routes');
 const paymentRoutes = require("./routes/payment.routes");
-
+const adminRoutes =require("./routes/admin.routes")
 connectToDb();
 
 app.use(cors());
@@ -29,6 +29,7 @@ app.use('/captains', captainRoutes);
 app.use('/maps', mapsRoutes);
 app.use('/rides', rideRoutes);
 app.use("/payments", paymentRoutes);
+app.use("/admin-hubhaimere-sepanga-matlena",adminRoutes);
 
 module.exports = app;
 

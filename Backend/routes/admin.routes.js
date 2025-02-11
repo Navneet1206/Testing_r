@@ -4,6 +4,15 @@ const rideModel = require('../models/ride.model');
 const captainModel = require('../models/captain.model');
 const { sendMessageToSocketId } = require('../socket');
 const { sendEmail } = require('../services/communication.service');
+const adminController = require('../controllers/admin.controller');
+const authMiddleware = require('../middlewares/auth.middleware');
+
+router.post('/login', adminController.adminLogin);
+router.get('/dashboard', authMiddleware.authAdmin, adminController.getDashboardData);
+router.post('/block-user/:id', authMiddleware.authAdmin, adminController.blockUser);
+router.post('/unblock-user/:id', authMiddleware.authAdmin, adminController.unblockUser);
+
+module.exports = router;
 
 // Get all rides
 router.get('/rides', async (req, res) => {
