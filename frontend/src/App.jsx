@@ -14,15 +14,22 @@ import CaptainProtectWrapper from './pages/CaptainProtectWrapper';
 import CaptainLogout from './pages/CaptainLogout';
 import Riding from './pages/Riding';
 import CaptainRiding from './pages/CaptainRiding';
-import 'remixicon/fonts/remixicon.css';
 import VerifyEmailOTP from './pages/VerifyEmailOTP';
 import VerifyMobileOTP from './pages/VerifyMobileOTP';
-import AdminDashboard from './pages/AdminDashboard'; 
+import AdminLogin from './pages/admin/AdminLogin';
+import AdminDashboard from './pages/admin/Dashboard';
+import Users from './pages/admin/Users';
+import Captains from './pages/admin/Captains';
+import RideManagement from './pages/admin/RideManagement';
+import Payments from './pages/admin/Payments';
+import AdminProtectWrapper from './pages/admin/AdminProtectWrapper';
+import 'remixicon/fonts/remixicon.css';
 
 const App = () => {
   return (
     <div>
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Start />} />
         <Route path="/login" element={<UserLogin />} />
         <Route path="/signup" element={<UserSignup />} />
@@ -30,15 +37,14 @@ const App = () => {
         <Route path="/captain-signup" element={<CaptainSignup />} />
         <Route path="/verify-email-otp" element={<VerifyEmailOTP />} />
         <Route path="/verify-mobile-otp" element={<VerifyMobileOTP />} />
-        <Route path="/admin-hubhaimere-sepanga-matlena" element={<AdminDashboard />} /> 
+        <Route path="/admin/login" element={<AdminLogin />} /> 
+
+        {/* User Protected Routes */}
         <Route
           path="/home"
           element={
             <UserProtectWrapper>
-              <>
-                
-                <Home />
-              </>
+              <Home />
             </UserProtectWrapper>
           }
         />
@@ -46,21 +52,33 @@ const App = () => {
           path="/user/logout"
           element={
             <UserProtectWrapper>
-              <>
-                
-                <UserLogout />
-              </>
+              <UserLogout />
             </UserProtectWrapper>
           }
         />
         <Route
+          path="/riding"
+          element={
+            <UserProtectWrapper>
+              <Riding />
+            </UserProtectWrapper>
+          }
+        />
+        <Route
+          path="/user/history"
+          element={
+            <UserProtectWrapper>
+              <UserRideHistory />
+            </UserProtectWrapper>
+          }
+        />
+
+        {/* Captain Protected Routes */}
+        <Route
           path="/captain-home"
           element={
             <CaptainProtectWrapper>
-              <>
-                
-                <CaptainHome />
-              </>
+              <CaptainHome />
             </CaptainProtectWrapper>
           }
         />
@@ -68,44 +86,58 @@ const App = () => {
           path="/captain/logout"
           element={
             <CaptainProtectWrapper>
-              <>
-                
-                <CaptainLogout />
-              </>
+              <CaptainLogout />
             </CaptainProtectWrapper>
-          }
-        />
-        <Route
-          path="/riding"
-          element={
-            <UserProtectWrapper>
-              <>
-                
-                <Riding />
-              </>
-            </UserProtectWrapper>
           }
         />
         <Route
           path="/captain-riding"
           element={
             <CaptainProtectWrapper>
-              <>
-                
-                <CaptainRiding />
-              </>
+              <CaptainRiding />
             </CaptainProtectWrapper>
           }
         />
+
+        {/* Admin Protected Routes */}
         <Route
-          path="/user/history"
+          path="/admin/dashboard"
           element={
-            <CaptainProtectWrapper>
-              <>
-                
-                <UserRideHistory />
-              </>
-            </CaptainProtectWrapper>
+            <AdminProtectWrapper>
+              <AdminDashboard />
+            </AdminProtectWrapper>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminProtectWrapper>
+              <Users />
+            </AdminProtectWrapper>
+          }
+        />
+        <Route
+          path="/admin/captains"
+          element={
+            <AdminProtectWrapper>
+              <Captains />
+            </AdminProtectWrapper>
+          }
+        />
+        <Route
+          path="/admin/rides"
+          element={
+            <AdminProtectWrapper>
+              <RideManagement />
+            </AdminProtectWrapper>
+          }
+        />
+        <Route
+          path="/admin/payments"
+          element={
+            <AdminProtectWrapper>
+              <Payments />
+            </AdminProtectWrapper>
           }
         />
       </Routes>
