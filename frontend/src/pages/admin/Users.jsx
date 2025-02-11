@@ -3,57 +3,122 @@ import axios from "axios";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const token = localStorage.getItem("adminToken");
-        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/admin-hubhaimere-sepanga-matlena/users`, { headers: { Authorization: `Bearer ${token}` } });
-        setUsers(res.data.users);
-      } catch (err) {
-        console.error("Error fetching users:", err);
-      }
-    };
     fetchUsers();
   }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/admin-hubhaimere-sepanga-matlena/users`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUsers(res.data.users);
+    } catch (err) {
+      showToast("Error fetching users", "error");
+    }
+  };
 
   const toggleBlockUser = async (id, status) => {
     try {
       const token = localStorage.getItem("adminToken");
-      await axios.post(`${import.meta.env.VITE_BASE_URL}/admin-hubhaimere-sepanga-matlena/${status === "blocked" ? "unblock" : "block"}-user/${id}`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      setUsers(users.map(user => (user._id === id ? { ...user, status: status === "blocked" ? "active" : "blocked" } : user)));
+      await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/admin-hubhaimere-sepanga-matlena/${
+          status === "blocked" ? "unblock" : "block"
+        }-user/${id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUsers(
+        users.map((user) =>
+          user._id === id
+            ? { ...user, status: status === "blocked" ? "active" : "blocked" }
+            : user
+        )
+      );
+      showToast(
+        `User ${status === "blocked" ? "unblocked" : "blocked"} successfully`,
+        "success"
+      );
     } catch (err) {
-      console.error("Error toggling user status:", err);
+      showToast("Error updating user status", "error");
     }
   };
 
+  const showToast = (message, type) => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: "", type: "" }), 3000);
+  };
+
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Users</h1>
-      <table className="w-full bg-white shadow-lg rounded">
-        <thead className="bg-gray-200">
-          <tr>
-            <th className="p-3">Name</th>
-            <th className="p-3">Email</th>
-            <th className="p-3">Status</th>
-            <th className="p-3">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Users</h1>
+        
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {users.map((user) => (
-            <tr key={user._id} className="border-b">
-              <td className="p-3">{user.fullname.firstname} {user.fullname.lastname}</td>
-              <td className="p-3">{user.email}</td>
-              <td className={`p-3 ${user.status === "blocked" ? "text-red-500" : "text-green-500"}`}>{user.status}</td>
-              <td className="p-3">
-                <button onClick={() => toggleBlockUser(user._id, user.status)} className={`p-2 text-white rounded ${user.status === "blocked" ? "bg-green-500" : "bg-red-500"}`}>
+            <div
+              key={user._id}
+              className="bg-white rounded-lg shadow-md overflow-hidden"
+            >
+              <div className="p-4 border-b border-gray-100">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-lg font-semibold text-gray-800">
+                    {user.fullname.firstname} {user.fullname.lastname}
+                  </h2>
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      user.status === "blocked"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-green-100 text-green-800"
+                    }`}
+                  >
+                    {user.status}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-4 space-y-3">
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-500">Email</p>
+                  <p className="text-gray-700">{user.email}</p>
+                </div>
+              </div>
+
+              <div className="p-4 bg-gray-50 border-t border-gray-100">
+                <button
+                  onClick={() => toggleBlockUser(user._id, user.status)}
+                  className={`w-full py-2 px-4 rounded-md text-white font-medium transition-colors ${
+                    user.status === "blocked"
+                      ? "bg-green-500 hover:bg-green-600"
+                      : "bg-red-500 hover:bg-red-600"
+                  }`}
+                >
                   {user.status === "blocked" ? "Unblock" : "Block"}
                 </button>
-              </td>
-            </tr>
+              </div>
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      </div>
+
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className="fixed bottom-4 right-4 animate-fade-in">
+          <div
+            className={`px-6 py-3 rounded-lg shadow-lg ${
+              toast.type === "success"
+                ? "bg-green-500 text-white"
+                : "bg-red-500 text-white"
+            }`}
+          >
+            {toast.message}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
