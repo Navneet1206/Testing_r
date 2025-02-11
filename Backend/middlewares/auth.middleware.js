@@ -39,39 +39,40 @@ module.exports.authUser = async (req, res, next) => {
 }
 
 module.exports.authCaptain = async (req, res, next) => {
-  const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+    const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
 
-  if (!token) {
-      console.log('No token provided');
-      return res.status(401).json({ message: 'Unauthorized: No token provided' });
-  }
+    if (!token) {
+        console.log('❌ No token provided');
+        return res.status(401).json({ message: 'Unauthorized: No token provided' });
+    }
 
-  const isBlacklisted = await blackListTokenModel.findOne({ token });
-  if (isBlacklisted) {
-      console.log('Token is blacklisted');
-      return res.status(401).json({ message: 'Unauthorized: Token is blacklisted' });
-  }
+    const isBlacklisted = await blackListTokenModel.findOne({ token });
+    if (isBlacklisted) {
+        console.log('❌ Token is blacklisted');
+        return res.status(401).json({ message: 'Unauthorized: Token is blacklisted' });
+    }
 
-  try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log('Decoded token:', decoded);
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('✅ Decoded token:', decoded);
 
-      const captain = await captainModel.findById(decoded._id);
+        const captain = await captainModel.findById(decoded._id);
+        
+        if (!captain) {
+            console.log('⚠️ Captain not found, proceeding without error.');
+            req.captain = null; // ✅ No error, request will proceed
+        } else {
+            req.captain = captain;
+        }
 
-      // ✅ Fix: Captain null hone par error mat bhejo
-      if (!captain) {
-          console.log('No captain found, proceeding without error.');
-          req.captain = null;
-      } else {
-          req.captain = captain;
-      }
-
-      next();
-  } catch (err) {
-      console.error('Error in authCaptain middleware:', err);
-      return res.status(401).json({ message: 'Unauthorized: Invalid token' });
-  }
+        next();
+    } catch (err) {
+        console.error('❌ Error in authCaptain middleware:', err);
+        return res.status(401).json({ message: 'Unauthorized: Invalid token' });
+    }
 };
+
+
 
   
   

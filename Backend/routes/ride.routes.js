@@ -19,7 +19,9 @@ router.post(
     body("paymentType").isString().isIn(["cash", "online"]).withMessage("Invalid payment type"), // ✅ Fix: Ensure paymentType is included
     rideController.createRide
   );
-router.get('/captain/all', rideController.getAllRidesForCaptains);
+
+  router.get('/captain/all', authMiddleware.authCaptain, rideController.getAllRidesForCaptains);
+
 
 
 router.get('/get-fare',

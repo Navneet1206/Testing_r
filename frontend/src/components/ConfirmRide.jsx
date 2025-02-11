@@ -13,69 +13,110 @@ const ConfirmRide = (props) => {
 
   const baseUrl = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
   const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY; // ✅ Load Razorpay Key from .env
-
   const handleConfirmRide = async () => {
     if (!rideDate || !rideTime) {
-      setShowValidationModal(true);
-      return;
+        setShowValidationModal(true);
+        return;
     }
 
     setIsSubmitting(true);
     const rideData = {
-      pickup: props.pickup,
-      destination: props.destination,
-      vehicleType: props.vehicleType,
-      fare: props.fare[props.vehicleType],
-      rideDate,
-      rideTime,
-      paymentType: paymentMethod,
+        pickup: props.pickup,
+        destination: props.destination,
+        vehicleType: props.vehicleType,
+        fare: props.fare[props.vehicleType],
+        rideDate,
+        rideTime,
+        paymentType: paymentMethod,
     };
 
     try {
-      // ✅ Step 1: Ride Create API Call
-      const createResponse = await axios.post(`${baseUrl}/rides/create`, rideData, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-
-      const rideId = createResponse.data.ride._id;
-
-      // ✅ Step 2: Payment Handling
-      if (paymentMethod === "online") {
-        // 🛠 Razorpay Order Creation
-        const { data } = await axios.post(`${baseUrl}/payments/create-order`, {
-          amount: props.fare[props.vehicleType],
-          rideId,
+        // ✅ Step 1: Ride Create API Call
+        const createResponse = await axios.post(`${baseUrl}/rides/create`, rideData, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
 
-        // 🚀 Razorpay Checkout
-        const options = {
-          key: razorpayKey,
-          amount: data.amount,
-          currency: data.currency,
-          order_id: data.id,
-          handler: async function (response) {
-            await axios.post(`${baseUrl}/payments/verify-payment`, {
-              rideId,
-              orderId: data.id,
-              transactionId: response.razorpay_payment_id,
+        const rideId = createResponse.data.ride._id;
+
+        // ✅ Step 2: Payment Handling
+        if (paymentMethod === "online") {
+            // ✅ Load Razorpay Script First
+            const loadRazorpayScript = () => {
+                return new Promise((resolve) => {
+                    if (window.Razorpay) {
+                        resolve(true); // Already loaded
+                        return;
+                    }
+                    const script = document.createElement("script");
+                    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+                    script.onload = () => {
+                        console.log("✅ Razorpay script loaded");
+                        resolve(true);
+                    };
+                    script.onerror = () => {
+                        console.log("❌ Razorpay script failed to load");
+                        resolve(false);
+                    };
+                    document.body.appendChild(script);
+                });
+            };
+
+            const scriptLoaded = await loadRazorpayScript();
+            if (!scriptLoaded) {
+                setErrorMessage("Razorpay SDK failed to load. Please check your internet connection.");
+                setShowErrorModal(true);
+                return;
+            }
+
+            // 🛠 Razorpay Order Creation
+            const { data } = await axios.post(`${baseUrl}/payments/create-order`, {
+                amount: props.fare[props.vehicleType],
+                rideId,
             });
 
-            confirmRideAPI(rideId);
-          },
-        };
+            console.log("✅ Order Created:", data);
 
-        const rzp1 = new window.Razorpay(options);
-        rzp1.open();
-      } else {
-        // ✅ Cash Payment Case
-        confirmRideAPI(rideId);
-      }
+            // 🚀 Razorpay Checkout
+            const options = {
+                key: razorpayKey,
+                amount: data.amount,
+                currency: data.currency,
+                order_id: data.id,
+                name: "My Ride App",
+                description: "Ride Payment",
+                handler: async function (response) {
+                    console.log("✅ Payment Successful:", response);
+                    await axios.post(`${baseUrl}/payments/verify-payment`, {
+                        rideId,
+                        orderId: data.id,
+                        transactionId: response.razorpay_payment_id,
+                    });
+
+                    confirmRideAPI(rideId);
+                },
+                prefill: {
+                    name: "Navneet Vishwakarma", // Can be dynamic
+                    email: "rajvl132011@gmail.com", // Can be dynamic
+                    contact: "+91 8435061006", // Can be dynamic
+                },
+                theme: {
+                    color: "#3399cc",
+                },
+            };
+
+            const rzp1 = new window.Razorpay(options);
+            rzp1.open();
+        } else {
+            // ✅ Cash Payment Case
+            confirmRideAPI(rideId);
+        }
     } catch (error) {
-      handleError(error);
+        handleError(error);
     } finally {
-      setIsSubmitting(false);
+        setIsSubmitting(false);
     }
-  };
+};
+
 
   // ✅ Ride Confirm API
   const confirmRideAPI = async (rideId) => {

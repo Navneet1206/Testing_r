@@ -9,21 +9,32 @@ const CaptainHome = () => {
   const baseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:3000';
 
   const fetchRides = async () => {
-    try {
-      const res = await axios.get(`${baseUrl}/rides/captain/all`);
-      if (Array.isArray(res.data)) {
-        // Changed sort order to show newest first
-        const sortedRides = res.data.sort((a, b) => new Date(b.rideDate) - new Date(a.rideDate));
-        setRides(sortedRides);        
-      } else {
-        console.error("Unexpected response format:", res.data);
-        setRides([]);
-      }
-    } catch (error) {
-      console.error("Error fetching rides:", error);
-      setRides([]);
+    const token = localStorage.getItem("token"); // ✅ Token from localStorage
+    console.log("🔑 Token before API call:", token); // Debugging
+
+    if (!token) {
+        console.error("❌ No token found, redirecting to login");
+        return; // Token missing hai to API call mat bhejo
     }
-  };
+
+    try {
+        const res = await axios.get(`${baseUrl}/rides/captain/all`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (Array.isArray(res.data)) {
+            console.log("✅ Rides Fetched:", res.data.length);
+            setRides(res.data.sort((a, b) => new Date(b.rideDate) - new Date(a.rideDate)));
+        } else {
+            console.error("❌ Unexpected API Response:", res.data);
+            setRides([]);
+        }
+    } catch (error) {
+        console.error("❌ Error Fetching Rides:", error.response?.data?.message || error.message);
+        setRides([]);
+    }
+};
+
 
   const getTimeAgo = (dateString) => {
     const date = new Date(dateString);
