@@ -3,7 +3,6 @@ import axios from 'axios';
 import { UserDataContext } from '../context/UserContext';
 import { motion } from 'framer-motion'; // For animations
 import { FaSpinner, FaMapMarkerAlt, FaWallet, FaCheckCircle, FaUser, FaTimesCircle } from 'react-icons/fa'; // Icons for better visuals
-
 const UserRideHistory = () => {
     const [rides, setRides] = useState([]); // Stores fetched ride history
     const [isLoading, setIsLoading] = useState(true); // Loading state

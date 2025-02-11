@@ -27,13 +27,13 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md">
+            <Link to="/home" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md">
               Home
             </Link>
-            <Link to="/rides" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md">
+            <Link to="/user/history" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md">
               My Rides
             </Link>
-            <Link to="/profile" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md">
+            <Link to="/home" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md">
               Profile
             </Link>
             <Link to="/user/logout" className="bg-gray-200 hover:bg-gray-300 p-2 rounded-full">
