@@ -3,22 +3,40 @@ import axios from "axios";
 
 const RideManagement = () => {
   const [rides, setRides] = useState([]);
+  const [captains, setCaptains] = useState([]);
+  // To hold the selected captain for each ride (keyed by ride id)
+  const [assignments, setAssignments] = useState({});
 
   useEffect(() => {
-    const fetchRides = async () => {
-      try {
-        const token = localStorage.getItem("adminToken");
-        const res = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/admin-hubhaimere-sepanga-matlena/rides`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setRides(res.data.rides);
-      } catch (err) {
-        console.error("Error fetching rides:", err);
-      }
-    };
     fetchRides();
+    fetchCaptains();
   }, []);
+
+  const fetchRides = async () => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/admin-hubhaimere-sepanga-matlena/rides`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setRides(res.data.rides);
+    } catch (err) {
+      console.error("Error fetching rides:", err);
+    }
+  };
+
+  const fetchCaptains = async () => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/admin-hubhaimere-sepanga-matlena/captains`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setCaptains(res.data.captains);
+    } catch (err) {
+      console.error("Error fetching captains:", err);
+    }
+  };
 
   const updateRideStatus = async (id, status) => {
     try {
@@ -31,6 +49,29 @@ const RideManagement = () => {
       setRides(rides.map(ride => (ride._id === id ? { ...ride, status } : ride)));
     } catch (err) {
       console.error("Error updating ride status:", err);
+    }
+  };
+
+  // New function to assign a captain using the selected value
+  const assignCaptain = async (rideId) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const captainId = assignments[rideId];
+      if (!captainId) {
+        alert("Please select a captain.");
+        return;
+      }
+      const res = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/admin-hubhaimere-sepanga-matlena/rides/${rideId}/assign`,
+        { captainId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // Update the ride in state with the assigned captain data
+      setRides(rides.map(ride => ride._id === rideId ? res.data.ride : ride));
+      // Clear selection for this ride
+      setAssignments(prev => ({ ...prev, [rideId]: "" }));
+    } catch (err) {
+      console.error("Error assigning captain:", err);
     }
   };
 
@@ -77,9 +118,35 @@ const RideManagement = () => {
                   <p className="text-sm text-gray-500">Destination</p>
                   <p className="text-gray-700">{ride.destination}</p>
                 </div>
+                {/* If ride is not assigned, show dropdown to select a captain */}
+                {!ride.captain && (
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-500">Assign Captain</p>
+                    <select
+                      value={assignments[ride._id] || ""}
+                      onChange={(e) =>
+                        setAssignments(prev => ({ ...prev, [ride._id]: e.target.value }))
+                      }
+                      className="w-full border border-gray-300 rounded p-2"
+                    >
+                      <option value="">Select a captain</option>
+                      {captains.map((captain) => (
+                        <option key={captain._id} value={captain._id}>
+                          {captain.fullname.firstname} {captain.fullname.lastname} ({captain.vehicle?.vehicleType})
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => assignCaptain(ride._id)}
+                      className="w-full mt-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md transition-colors text-sm font-medium"
+                    >
+                      Assign
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* Card Footer */}
+              {/* Card Footer with Status Buttons */}
               <div className="p-4 bg-gray-50 border-t border-gray-100">
                 <div className="flex flex-wrap gap-2">
                   <button
