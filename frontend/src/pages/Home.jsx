@@ -191,7 +191,7 @@ const Home = () => {
 
   return (
     <>
-      <Captainnavbar />
+      <Usersnavbar />
       <div className="min-h-screen overflow-y-auto">
       {/* Section 1: Live Tracking (50vh) */}
       <div style={{ height: '50vh' }}>
