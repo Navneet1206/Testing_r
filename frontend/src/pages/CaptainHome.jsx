@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { SocketContext } from "../context/SocketContext";
 import axios from "axios";
+import Captainnavbar from "../components/Captainnavbar";
 
 const CaptainHome = () => {
   const [rides, setRides] = useState([]);
@@ -88,6 +89,8 @@ const CaptainHome = () => {
   };
 
   return (
+    <>
+    <Captainnavbar />
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
@@ -161,6 +164,7 @@ const CaptainHome = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

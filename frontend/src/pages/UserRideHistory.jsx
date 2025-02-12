@@ -3,6 +3,7 @@ import axios from 'axios';
 import { UserDataContext } from '../context/UserContext';
 import { motion } from 'framer-motion'; // For animations
 import { FaSpinner, FaMapMarkerAlt, FaWallet, FaCheckCircle, FaUser, FaTimesCircle } from 'react-icons/fa'; // Icons for better visuals
+import Usersnavbar from '../components/Usersnavbar';
 const UserRideHistory = () => {
     const [rides, setRides] = useState([]); // Stores fetched ride history
     const [isLoading, setIsLoading] = useState(true); // Loading state
@@ -43,6 +44,8 @@ const UserRideHistory = () => {
     };
 
     return (
+        <>
+        <Usersnavbar />
         <div className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen mt-14">
             <h2 className="text-4xl font-bold mb-8 text-center text-gray-800">
                 Your Ride History
@@ -236,6 +239,7 @@ const UserRideHistory = () => {
                 </>
             )}
         </div>
+        </>
     );
 };
 
