@@ -79,7 +79,7 @@ const RideSharingLanding = () => {
         <nav className="relative z-10 container mx-auto px-6 py-4 flex justify-between items-center">
           <div className="text-3xl font-bold text-white">RideShare</div>
           <div className="space-x-8 text-white">
-            <a href="#services" className="hover:text-blue-300 transition-colors">Rides</a>
+            {/* <a href="#services" className="hover:text-blue-300 transition-colors">Rides</a> */}
             <a href="#about" className="hover:text-blue-300 transition-colors">About</a>
             <a href="#contact" className="hover:text-blue-300 transition-colors">Contact</a>
           </div>
@@ -98,6 +98,11 @@ const RideSharingLanding = () => {
               </Link>
               <Link to="/captain-login">
                 <button className="bg-white text-blue-900 px-8 py-4 rounded-lg font-bold hover:bg-gray-100 transition-colors">
+                  Become a Driver
+                </button>
+              </Link>
+              <Link to="/admin/login">
+                <button className="bg-red-300 text-blue-900 px-8 py-4 rounded-lg font-bold hover:bg-gray-100 transition-colors">
                   Become a Driver
                 </button>
               </Link>
